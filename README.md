@@ -5,7 +5,7 @@
 Bouleto est une application mobile permettant à un famille ou un groupe d'ami de noter et d'enregistrer des points boulets. Les points boulets sont attribués lorsqu'une personne fait une bétise, oublie quelque chose...
 Par exemple, si quelqu'un perd un verre de lunette en faisant de la moto. Ou, si quelqu'un va aux urgences pour ne pas savoir couper une pêche avec un couteau... (anecdote vraie, tous le monde va bien et le contexte était amusant)
 Les points boulets naissent à partir d'une action amusante qui désespère souvent l'entourage.
-A vous de déterminer ce qui compte ou non en points boulet ! 
+A vous de déterminer ce qui compte ou non en points boulet !
 
 ## <u> Fonctionnalités principales </u>
 
