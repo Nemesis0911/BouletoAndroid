@@ -38,6 +38,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,7 +49,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
 import com.example.bouleto.ui.theme.BouletoTheme
+import com.example.bouleto.vues.Accueil
+import com.example.bouleto.vues.Carte
+import com.example.bouleto.vues.Parametres
+
+class DestinationAccueil
+class DestinationCarte
+class DestinationParametres
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,169 +89,157 @@ fun GreetingPreview() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Main() {
+    val backStack = remember { mutableStateListOf<Any>(DestinationAccueil()) }
+
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        Text(
-                            text = "Bouleto",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = "Tableau des boulets",
-                            fontSize = 14.sp,
-                            color = Color.Gray
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = { /* Open menu */ }) {
-                        Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "Menu"
-                        )
-                    }
-                },
-                actions ={
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color(0xFFFFA726),
-                        modifier = Modifier
-                            .size(50.dp)
-                            //.padding(end = 10.dp)
-
-
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .fillMaxSize()
-
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Star,
-                                contentDescription = "Trophée",
-                                tint = Color.White,
-                                modifier = Modifier
-                                    .size(26.dp)
-
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
-        },
-        bottomBar = { BottomNavigationBar() }
+        topBar = {TopBarAccueil(backStack)},
+        bottomBar = { BottomNavigationBar(backStack) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
                     .padding(horizontal = 10.dp, vertical = 5.dp)
             ){
-            Button(
-                onClick = { /* Action */ },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 10.dp)
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFFA726)
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Ajouter un point boulet",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-            Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { /* Action */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 10.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFFA726)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Ajouter un point boulet",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
 
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                entryProvider = { key ->
+                    when (key) {
+                        is DestinationAccueil -> NavEntry(key) {
+                            Accueil()
+                        }
+                        is DestinationCarte -> NavEntry(key) {
+                            Carte()
+                        }
+                        is DestinationParametres -> NavEntry(key) {
+                            Parametres()
+                        }
+                        else -> {
+                            error("Unknown key $key")
+                        }
+                    }
+                }
+            )
         }
+
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-//fun TopBarAccueil() {
-//    TopAppBar(
-//        title = {
-//            Column(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalAlignment = Alignment.End
-//            ) {
-//                Text(
-//                    text = "Bouleto",
-//                    fontSize = 18.sp,
-//                    fontWeight = FontWeight.SemiBold
-//                )
-//                Text(
-//                    text = "Tableau des boulets",
-//                    fontSize = 14.sp,
-//                    color = Color.Gray
-//                )
-//            }
-//        },
-//        navigationIcon = {
-//            IconButton(onClick = { /* Open menu */ }) {
-//                Icon(
-//                    imageVector = Icons.Filled.Menu,
-//                    contentDescription = "Menu"
-//                )
-//            }
-//        },
-//        actions = {
-//            Surface(
-//                shape = RoundedCornerShape(12.dp),
-//                color = Color(0xFFFFA726),
-//                modifier = Modifier.size(48.dp)
-//            ) {
-//                Box(
-//                    contentAlignment = Alignment.Center,
-//                    modifier = Modifier.fillMaxSize()
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Filled.Star,
-//                        contentDescription = "Trophée",
-//                        tint = Color.White,
-//                        modifier = Modifier.size(28.dp)
-//                    )
-//                }
-//            }
-//        },
-//        colors = TopAppBarDefaults.topAppBarColors(
-//            containerColor = Color.White
-//        )
-//    )
-//}
+fun TopBarAccueil(backStack: SnapshotStateList<Any>) {
+    TopAppBar(
+        title = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = "Bouleto",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                val current = backStack.lastOrNull()
+                val titleText = when (current) {
+                    is DestinationAccueil -> "Tableau des boulets"
+                    is DestinationCarte -> "Carte des boulets"
+                    is DestinationParametres -> "Paramétres"
+                    else -> "Error"
+                }
+                Text(titleText,fontSize = 14.sp,
+                    color = Color.Gray)
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = { /* Open menu */ }) {
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = "Menu"
+                )
+            }
+        },
+        actions ={
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFFFFA726),
+                modifier = Modifier
+                    .size(50.dp)
+                //.padding(end = 10.dp)
 
 
-fun BottomNavigationBar() {
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = "Trophée",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(26.dp)
+
+                    )
+                }
+            }
+
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.White
+        )
+    )
+}
+
+@Composable
+fun BottomNavigationBar(backStack: SnapshotStateList<Any>) {
     NavigationBar(
         containerColor = Color.White,
         tonalElevation = 8.dp
     ) {
+        val current = backStack.lastOrNull()
+        val activeTab = when (current) {
+            is DestinationAccueil -> 1
+            is DestinationCarte -> 2
+            is DestinationParametres -> 3
+            else -> 0
+        }
+
         NavigationBarItem(
             icon = {
                 Icon(
@@ -247,8 +248,8 @@ fun BottomNavigationBar() {
                 )
             },
             label = { Text("Accueil") },
-            selected = true,
-            onClick = { /* Navigate to Accueil */ },
+            selected = activeTab == 1,
+            onClick = { backStack.add(DestinationAccueil()) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color(0xFFFFA726),
                 selectedTextColor = Color(0xFFFFA726),
@@ -263,8 +264,13 @@ fun BottomNavigationBar() {
                 )
             },
             label = { Text("Maps") },
-            selected = false,
-            onClick = { /* Navigate to Maps */ }
+            selected = activeTab == 2,
+            onClick = { backStack.add(DestinationCarte()) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color(0xFFFFA726),
+                selectedTextColor = Color(0xFFFFA726),
+                indicatorColor = Color(0xFFFFA726).copy(alpha = 0.1f)
+            )
         )
         NavigationBarItem(
             icon = {
@@ -274,8 +280,13 @@ fun BottomNavigationBar() {
                 )
             },
             label = { Text("Paramètres") },
-            selected = false,
-            onClick = { /* Navigate to Settings */ }
+            selected = activeTab == 3,
+            onClick = { backStack.add(DestinationParametres()) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color(0xFFFFA726),
+                selectedTextColor = Color(0xFFFFA726),
+                indicatorColor = Color(0xFFFFA726).copy(alpha = 0.1f)
+            )
         )
     }
 }
