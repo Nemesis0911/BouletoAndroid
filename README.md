@@ -15,7 +15,7 @@ Cette application va donc permettre d'enregistrer vos points boulets en local. P
 
 Elle sera constituée de plusieurs écrans. Une première page d'accueil avec les différents groupe dans le menu burger, et le tableau des points boulet sur la page principale (en fonction du groupe sélectionné). Ensuite, il y aura une 2eme page avec une carte, la possibilité de chercher une adresse, et les différents pin rajoutés. Sur cette carte, il y aura tous les pins des différents groupes (avec des couleurs différentes pour différencier les groupes).
 
-## <u> Maquette </u>
+## <u> Maquettes </u>
 
 
 [Lien vers Maquette](https://www.figma.com/make/H7v3vDfTMRsYF7SHvStGf7/Bouleto-App-Mockup?node-id=0-1&p=f&t=fF9BwRvJbcVZ81IC-0&fullscreen=1)
