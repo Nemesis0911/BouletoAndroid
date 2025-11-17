@@ -1,5 +1,6 @@
 package com.example.bouleto
 
+import Accueil
 import android.R.attr.icon
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fitInside
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -52,7 +54,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.example.bouleto.ui.theme.BouletoTheme
-import com.example.bouleto.vues.Accueil
 import com.example.bouleto.vues.Carte
 import com.example.bouleto.vues.Parametres
 
@@ -164,24 +165,31 @@ fun TopBarAccueil(backStack: SnapshotStateList<Any>) {
     TopAppBar(
         title = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+                    .padding(end = 10.dp),
                 horizontalAlignment = Alignment.End
+
             ) {
                 Text(
                     text = "Bouleto",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
+
                 )
+                Spacer(modifier = Modifier.height(0.dp))
 
                 val current = backStack.lastOrNull()
                 val titleText = when (current) {
                     is DestinationAccueil -> "Tableau des boulets"
                     is DestinationCarte -> "Carte des boulets"
-                    is DestinationParametres -> "Paramétres"
+                    is DestinationParametres -> "Paramètres"
                     else -> "Error"
                 }
                 Text(titleText,fontSize = 14.sp,
-                    color = Color.Gray)
+                    color = Color.Gray
+                )
             }
         },
         navigationIcon = {
