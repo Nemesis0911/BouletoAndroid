@@ -17,6 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.bouleto.vues.FormulaireGroupe
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
+
 
 // Modèle de données pour les groupes
 data class Groupe(
@@ -29,7 +33,7 @@ data class Groupe(
 
 @Composable
 fun MenuGroupes(
-    groupes: List<Groupe>,
+    groupes: SnapshotStateList<Groupe>,
     onClose: () -> Unit,
     onCreerGroupe: () -> Unit,
     onSelectGroupe: (Groupe) -> Unit
@@ -38,6 +42,7 @@ fun MenuGroupes(
         modifier = Modifier.fillMaxWidth(0.85f),
         drawerContainerColor = Color.White
     ) {
+        var afficherFormulaire by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -79,7 +84,7 @@ fun MenuGroupes(
 
             // Bouton "Créer un nouveau groupe"
             Button(
-                onClick = onCreerGroupe,
+                onClick = { afficherFormulaire = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -141,9 +146,35 @@ fun MenuGroupes(
                     lineHeight = 20.sp
                 )
             }
+            if (afficherFormulaire) {
+                FormulaireGroupe(
+                    onDismiss = { afficherFormulaire = false },
+                    onValider = { nomGroupe, membres ->
+                        val initiales = nomGroupe.take(2).uppercase()
+                        val couleurs = listOf(
+                            Color(0xFFFFA726), Color(0xFF26A69A), Color(0xFFEC407A),
+                            Color(0xFF42A5F5), Color(0xFF9CCC65), Color(0xFF26A69A)
+                        )
+                        val couleur = couleurs.random()
+
+                        groupes.add(
+                            Groupe(
+                                nom = nomGroupe,
+                                nbMembres = membres.size,
+                                initiales = initiales,
+                                couleur = couleur,
+                                estSelectionne = false
+                            )
+                        )
+                        afficherFormulaire = false
+                    }
+                )
+            }
         }
     }
 }
+
+
 
 @Composable
 fun CarteGroupe(
