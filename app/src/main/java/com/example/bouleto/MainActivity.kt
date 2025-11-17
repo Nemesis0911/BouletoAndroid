@@ -1,6 +1,8 @@
 package com.example.bouleto
 
 import Accueil
+import Groupe
+import MenuGroupes
 import android.R.attr.icon
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
@@ -35,13 +38,16 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -56,10 +62,12 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.bouleto.ui.theme.BouletoTheme
 import com.example.bouleto.vues.Carte
 import com.example.bouleto.vues.Parametres
+import kotlinx.coroutines.launch
 
 class DestinationAccueil
 class DestinationCarte
 class DestinationParametres
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,81 +95,12 @@ fun GreetingPreview() {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun Main() {
-    val backStack = remember { mutableStateListOf<Any>(DestinationAccueil()) }
 
-    Scaffold(
-        topBar = {TopBarAccueil(backStack)},
-        bottomBar = { BottomNavigationBar(backStack) }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(horizontal = 10.dp, vertical = 5.dp)
-            ){
-                Button(
-                    onClick = { /* Action */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp, vertical = 10.dp)
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFFA726)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Ajouter un point boulet",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            NavDisplay(
-                backStack = backStack,
-                onBack = { backStack.removeLastOrNull() },
-                entryProvider = { key ->
-                    when (key) {
-                        is DestinationAccueil -> NavEntry(key) {
-                            Accueil()
-                        }
-                        is DestinationCarte -> NavEntry(key) {
-                            Carte()
-                        }
-                        is DestinationParametres -> NavEntry(key) {
-                            Parametres()
-                        }
-                        else -> {
-                            error("Unknown key $key")
-                        }
-                    }
-                }
-            )
-        }
-
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBarAccueil(backStack: SnapshotStateList<Any>) {
+fun TopBarAccueil( backStack: SnapshotStateList<Any>,
+                   onMenuClick: () -> Unit ) {
     TopAppBar(
         title = {
             Column(
@@ -193,7 +132,8 @@ fun TopBarAccueil(backStack: SnapshotStateList<Any>) {
             }
         },
         navigationIcon = {
-            IconButton(onClick = { /* Open menu */ }) {
+            IconButton(onClick = onMenuClick) {
+
                 Icon(
                     imageVector = Icons.Filled.Menu,
                     contentDescription = "Menu"
@@ -296,5 +236,106 @@ fun BottomNavigationBar(backStack: SnapshotStateList<Any>) {
                 indicatorColor = Color(0xFFFFA726).copy(alpha = 0.1f)
             )
         )
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Main() {
+    val backStack = remember { mutableStateListOf<Any>(DestinationAccueil()) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    val groupes = remember {
+        mutableStateListOf(
+            Groupe("Famille", 8, "FA", Color(0xFFFFA726), estSelectionne = true),
+            Groupe("Bureau", 12, "BU", Color(0xFF26A69A))
+        )
+    }
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            MenuGroupes(
+                groupes = groupes,
+                onClose = { scope.launch { drawerState.close() } },
+                onCreerGroupe = { scope.launch { drawerState.close() } },
+                onSelectGroupe = { groupe ->
+                    scope.launch { drawerState.close() }
+                }
+            )
+        }
+    ) {
+
+        Scaffold(
+            topBar = {
+                TopBarAccueil(
+                    backStack = backStack,
+                    onMenuClick = { scope.launch { drawerState.open() } })
+            },
+            bottomBar = { BottomNavigationBar(backStack) }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                ) {
+                    Button(
+                        onClick = { /* Action */ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 10.dp)
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFA726)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Ajouter un point boulet",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                NavDisplay(
+                    backStack = backStack,
+                    onBack = { backStack.removeLastOrNull() },
+                    entryProvider = { key ->
+                        when (key) {
+                            is DestinationAccueil -> NavEntry(key) {
+                                Accueil()
+                            }
+
+                            is DestinationCarte -> NavEntry(key) {
+                                Carte()
+                            }
+
+                            is DestinationParametres -> NavEntry(key) {
+                                Parametres()
+                            }
+
+                            else -> {
+                                error("Unknown key $key")
+                            }
+                        }
+                    }
+                )
+            }
+
+        }
     }
 }
