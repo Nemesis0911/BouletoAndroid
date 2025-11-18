@@ -223,7 +223,7 @@ fun CarteGroupe(
                     color = Color(0xFF1A1A1A)
                 )
                 Text(
-                    text = "${groupe.nbMembres} membres",
+                    text = "${groupe.nbMembres} membre${if (groupe.nbMembres > 1) "s" else ""}",
                     fontSize = 14.sp,
                     color = Color(0xFF999999)
                 )
