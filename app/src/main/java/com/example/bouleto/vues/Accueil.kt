@@ -1,3 +1,6 @@
+package com.example.bouleto.vues
+
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,7 +30,7 @@ data class Joueur(
     val couleurAvatar: Color
 )
 
-// Exemple d'utilisation
+
 @Composable
 fun Accueil() {
     val joueursExemple = listOf(

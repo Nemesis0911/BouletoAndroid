@@ -1,8 +1,10 @@
 package com.example.bouleto
 
-import Accueil
-import Groupe
-import MenuGroupes
+import com.example.bouleto.vues.Accueil
+import com.example.bouleto.vues.Groupe
+import com.example.bouleto.vues.MenuGroupes
+
+
 import android.R.attr.icon
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,13 +17,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fitInside
+import com.example.bouleto.vues.Membre
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
@@ -244,13 +247,25 @@ fun Main() {
     val backStack = remember { mutableStateListOf<Any>(DestinationAccueil()) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    var afficherDialogPoint = remember { mutableStateOf(false) }
+
 
     val groupes = remember {
         mutableStateListOf(
-            Groupe("Famille", 8, "FA", Color(0xFFFFA726), estSelectionne = true),
-            Groupe("Bureau", 12, "BU", Color(0xFF26A69A))
+            Groupe(
+                nom = "Famille",
+                membres = listOf(
+                    Membre(prenom = "Papa", nom = "Dupont"),
+                    Membre(prenom = "Maman", nom = "Dupont"),
+                    Membre(prenom = "Enfant1", nom = "Dupont"),
+                ),
+                initiales = "FA",
+                couleur = Color(0xFFFFA726),
+                estSelectionne = true
+            )
         )
     }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -286,7 +301,7 @@ fun Main() {
                         .padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
                     Button(
-                        onClick = { /* Action */ },
+                        onClick = { afficherDialogPoint.value = true },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 10.dp, vertical = 10.dp)
@@ -307,6 +322,16 @@ fun Main() {
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
+
+                        if (afficherDialogPoint.value) {
+                            PopUpAjoutPointBoulet(
+                                groupes = groupes.toList(),  // <- GARDE .toList()
+                                onDismiss = { afficherDialogPoint.value = false },
+                                onConfirm = { membre, points, description ->
+                                    afficherDialogPoint.value = false
+                                }
+                            )
+                        }
                     }
 
                 }

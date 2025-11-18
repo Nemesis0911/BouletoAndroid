@@ -1,3 +1,5 @@
+package com.example.bouleto.vues
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,12 +22,14 @@ import androidx.compose.ui.unit.sp
 import com.example.bouleto.vues.FormulaireGroupe
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.example.bouleto.vues.Membre
 
 
 // Modèle de données pour les groupes
 data class Groupe(
     val nom: String,
-    val nbMembres: Int,
+    val membres: List<Membre> = emptyList(),  // ← AJOUTE CETTE LIGNE
+    val nbMembres: Int = membres.size,  // ← Calculé automatiquement
     val initiales: String,
     val couleur: Color,
     val estSelectionne: Boolean = false
