@@ -9,7 +9,6 @@ import androidx.room.PrimaryKey
 import androidx.room.ProvidedTypeConverter
 import androidx.room.Query
 import androidx.room.TypeConverter
-import com.example.bouleto.vues.MembreOld
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 
@@ -61,5 +60,11 @@ interface GroupeDao{
 
     @Query("DELETE FROM Groupe WHERE id = :id")
     suspend fun deleteGroupe(id: Int)
+
+    @Query("SELECT * FROM Groupe WHERE id = :id")
+    suspend fun getGroupeById(id: Int) : Groupe
+
+    @Query("DELETE FROM Groupe")
+    suspend fun deleteAll()
 }
 

@@ -15,22 +15,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.bouleto.models.Groupe
+import com.example.bouleto.models.Membre
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PopUpAjoutPointBoulet(
-    groupeOlds: List<GroupeOld>,  // <- Garde List, pas SnapshotStateList
+    groupes: List<Groupe>,  // <- Garde List, pas SnapshotStateList
     onDismiss: () -> Unit,
-    onConfirm: (MembreOld, Int, String) -> Unit
+    onConfirm: (Membre, Int, String) -> Unit
 ) {
-    var membreOldSelectionne by remember { mutableStateOf<MembreOld?>(null) }
+    var membreSelectionne by remember { mutableStateOf<Membre?>(null) }
     var nombrePoints by remember { mutableStateOf("2") }
     var description by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
 
     // Liste de tous les membres de tous les groupes
-    val tousLesMembres = groupeOlds.flatMap { it.membreOlds }
+    val tousLesMembres = groupes.flatMap { it.membres }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -97,7 +99,7 @@ fun PopUpAjoutPointBoulet(
                     onExpandedChange = { expanded = !expanded }
                 ) {
                     OutlinedTextField(
-                        value = membreOldSelectionne?.let { "${it.prenom} ${it.nom}" } ?: "",
+                        value = membreSelectionne?.let { "${it.prenom} ${it.nom}" } ?: "",
                         onValueChange = {},
                         readOnly = true,
                         placeholder = { Text("Sélectionner un membre") },
@@ -121,7 +123,7 @@ fun PopUpAjoutPointBoulet(
                             DropdownMenuItem(
                                 text = { Text("${membre.prenom} ${membre.nom}") },
                                 onClick = {
-                                    membreOldSelectionne = membre
+                                    membreSelectionne = membre
                                     expanded = false
                                 }
                             )
@@ -187,9 +189,9 @@ fun PopUpAjoutPointBoulet(
                     Button(
                         onClick = {
                             // ✅ Correction : On utilise les bonnes variables et on convertit le texte en nombre
-                            if (membreOldSelectionne != null) {
+                            if (membreSelectionne != null) {
                                 onConfirm(
-                                    membreOldSelectionne!!,
+                                    membreSelectionne!!,
                                     nombrePoints.toIntOrNull() ?: 0,
                                     description
                                 )
@@ -198,7 +200,7 @@ fun PopUpAjoutPointBoulet(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFFFB300)
                         ),
-                        enabled = membreOldSelectionne != null
+                        enabled = membreSelectionne != null
                     ) {
                         Text("Ajouter les points")
                     }

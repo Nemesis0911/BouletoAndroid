@@ -20,24 +20,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bouleto.MainViewmodel
+import com.example.bouleto.models.Groupe
+import com.example.bouleto.models.Membre
 
 
 // Modèle de données pour les groupes
-data class GroupeOld(
-    val nom: String,
-    val membreOlds: List<MembreOld> = emptyList(),  // ← AJOUTE CETTE LIGNE
-    val nbMembres: Int = membreOlds.size,  // ← Calculé automatiquement
-    val initiales: String,
-    val couleur: Color,
-    val estSelectionne: Boolean = false
-)
+//data class Groupe(
+//    val nom: String,
+//    val membres: List<Membre> = emptyList(),
+//    val nbMembres: Int = membres.size,
+//    val initiales: String,
+//    val couleur: Color,
+//    val estSelectionne: Boolean = false
+//)
 
 @Composable
 fun MenuGroupes(
-    groupeOlds: SnapshotStateList<GroupeOld>,
+    groupes: List<Groupe>,
     onClose: () -> Unit,
     onCreerGroupe: () -> Unit,
-    onSelectGroupe: (GroupeOld) -> Unit
+    onSelectGroupe: (Groupe) -> Unit,
+    viewmodel: MainViewmodel
 ) {
     ModalDrawerSheet(
         modifier = Modifier.fillMaxWidth(0.85f),
@@ -118,15 +123,20 @@ fun MenuGroupes(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
+            Text(
+                text = "Nombre de groupes : ${groupes.size}",
+            )
+
             // Liste des groupes
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                items(groupeOlds) { groupe ->
+                items(groupes) { groupe ->
                     CarteGroupe(
-                        groupeOld = groupe,
-                        onClick = { onSelectGroupe(groupe) }
+                        groupe = groupe,
+                        onClick = { onSelectGroupe(groupe) },
+                        viewModel = viewModel()
                     )
                 }
             }
@@ -150,21 +160,19 @@ fun MenuGroupes(
             if (afficherFormulaire) {
                 FormulaireGroupe(
                     onDismiss = { afficherFormulaire = false },
+                    viewModel = viewModel(),
                     onValider = { nomGroupe, membres ->
-                        val initiales = nomGroupe.take(2).uppercase()
                         val couleurs = listOf(
                             Color(0xFFFFA726), Color(0xFF26A69A), Color(0xFFEC407A),
                             Color(0xFF42A5F5), Color(0xFF9CCC65), Color(0xFF26A69A)
                         )
                         val couleur = couleurs.random()
 
-                        groupeOlds.add(
-                            GroupeOld(
+                        viewmodel.addGroupe(
+                            Groupe(
                                 nom = nomGroupe,
-                                nbMembres = membres.size,
-                                initiales = initiales,
+                                membres = membres,
                                 couleur = couleur,
-                                estSelectionne = false
                             )
                         )
                         afficherFormulaire = false
@@ -179,19 +187,23 @@ fun MenuGroupes(
 
 @Composable
 fun CarteGroupe(
-    groupeOld: GroupeOld,
-    onClick: () -> Unit
+    groupe: Groupe,
+    onClick: () -> Unit,
+    viewModel: MainViewmodel
 ) {
+    val groupeSelectionne = viewModel.groupeSelectionne.collectAsState()
+
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .border(
-                width = if (groupeOld.estSelectionne) 2.dp else 1.dp,
-                color = if (groupeOld.estSelectionne) Color(0xFFFFA726) else Color(0xFFE0E0E0),
+                width = if (groupeSelectionne.value.id == groupe.id) 2.dp else 1.dp,
+                color = if (groupeSelectionne.value.id == groupe.id) Color(0xFFFFA726) else Color(0xFFE0E0E0),
                 shape = RoundedCornerShape(12.dp)
             )
-            .background(if (groupeOld.estSelectionne) Color(0xFFFFF8E1) else Color.White)
+            .background(if (groupeSelectionne.value.id == groupe.id) Color(0xFFFFF8E1) else Color.White)
             .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -205,11 +217,11 @@ fun CarteGroupe(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(groupeOld.couleur),
+                    .background(groupe.couleur),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = groupeOld.initiales,
+                    text = "a faire",//groupe.initiales,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -218,20 +230,20 @@ fun CarteGroupe(
 
             Column {
                 Text(
-                    text = groupeOld.nom,
+                    text = groupe.nom,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF1A1A1A)
                 )
                 Text(
-                    text = "${groupeOld.nbMembres} membre${if (groupeOld.nbMembres > 1) "s" else ""}",
+                    text = "${groupe.membres.size} membre${if (groupe.membres.size > 1) "s" else ""}",
                     fontSize = 14.sp,
                     color = Color(0xFF999999)
                 )
             }
         }
 
-        if (groupeOld.estSelectionne) {
+        if (groupeSelectionne.value.id == groupe.id) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Sélectionné",

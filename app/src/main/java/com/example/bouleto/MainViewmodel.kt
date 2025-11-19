@@ -26,6 +26,7 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
             getAll()
         }
     }
+
     fun deleteGroupe(id : Int) {
         viewModelScope.launch {
             bddRepository.deleteGroupe(id)
@@ -33,8 +34,19 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
         }
     }
 
+    fun clearDatabase(){
+        viewModelScope.launch {
+            bddRepository.deleteAll()
+            getAll()
+        }
+    }
+
     //liste de nos groupes
     val groupes = MutableStateFlow<List<Groupe>>(emptyList())
+
+    val groupeSelectionne = MutableStateFlow<Groupe>(Groupe(id = -1, nom = "test", couleur = androidx.compose.ui.graphics.Color.Blue))
+
+
 
 }
 

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
+import androidx.compose.material3.CheckboxDefaults.colors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,26 +20,31 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bouleto.MainViewmodel
+import com.example.bouleto.models.Groupe
+import com.example.bouleto.models.Membre
 
 
-data class MembreOld(
-    val prenom: String,
-    val nom: String,
-    val id: String = "${System.currentTimeMillis()}_${(0..1000).random()}",
-    var points: Int = 0,
-    val groupe: String = ""
-)
+//data class Membre(
+//    val prenom: String,
+//    val nom: String,
+//    val id: String = "${System.currentTimeMillis()}_${(0..1000).random()}",
+//    var points: Int = 0,
+//    val groupe: String = ""
+//)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormulaireGroupe(
     onDismiss: () -> Unit,
-    onValider: (String, List<MembreOld>) -> Unit
+    onValider: (String, List<Membre>) -> Unit,
+    viewModel: MainViewmodel
 ) {
     var nomGroupe by remember { mutableStateOf("") }
     var prenomActuel by remember { mutableStateOf("") }
     var nomActuel by remember { mutableStateOf("") }
-    var membreOlds by remember { mutableStateOf(listOf<MembreOld>()) }
+    var membres by remember { mutableStateOf(listOf<Membre>()) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -144,7 +150,7 @@ fun FormulaireGroupe(
                     TextButton(
                         onClick = {
                             if (prenomActuel.isNotBlank() && nomActuel.isNotBlank()) {
-                                membreOlds = membreOlds + MembreOld(prenomActuel, nomActuel)
+                                membres = membres + Membre(prenom = prenomActuel, nom=nomActuel)
                                 prenomActuel = ""
                                 nomActuel = ""
                             }
@@ -220,7 +226,7 @@ fun FormulaireGroupe(
                     }
 
                     // Membres déjà ajoutés
-                    itemsIndexed(membreOlds) { index, membre ->
+                    itemsIndexed(membres) { index, membre ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -256,7 +262,7 @@ fun FormulaireGroupe(
 
                             IconButton(
                                 onClick = {
-                                    membreOlds = membreOlds.filterIndexed { i, _ -> i != index }
+                                    membres = membres.filterIndexed { i, _ -> i != index }
                                 },
                                 modifier = Modifier.size(24.dp)
                             ) {
@@ -276,15 +282,16 @@ fun FormulaireGroupe(
                 // Bouton Créer le groupe
                 Button(
                     onClick = {
-                        if (nomGroupe.isNotBlank() && membreOlds.isNotEmpty()) {
-                            onValider(nomGroupe, membreOlds)
+                        if (nomGroupe.isNotBlank() && membres.isNotEmpty()) {
+                            onValider(nomGroupe, membres)
+                            viewModel.addGroupe(groupe = Groupe(nom = nomGroupe, membres = membres, couleur = Color.Red))
                             onDismiss()
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(40.dp),
-                    enabled = nomGroupe.isNotBlank() && membreOlds.isNotEmpty(),
+                    enabled = nomGroupe.isNotBlank() && membres.isNotEmpty(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFFFA726)
                     ),

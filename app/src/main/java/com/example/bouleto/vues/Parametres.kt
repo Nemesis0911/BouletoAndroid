@@ -1,7 +1,9 @@
 package com.example.bouleto.vues
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,31 +15,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.bouleto.MainViewmodel
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
 
 @Composable
-fun Parametres(viewModel: MainViewmodel){
-    viewModel.addGroupe(
-        Groupe(
-            nom = "Enfin réussi ?",
-            membres = listOf(Membre(
-                prenom = "Joshua",
-                nom = "Six"
-            )),
-            couleur = Color.Red
-        )
-    )
-
+fun Parametres(viewModel: MainViewmodel) {
     val groupes = viewModel.groupes.collectAsState()
-
 
     LazyColumn(
         modifier = Modifier.padding(16.dp)
     ) {
-        items(groupes.value) { it ->
+        items(groupes.value) { groupe ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -47,7 +38,20 @@ fun Parametres(viewModel: MainViewmodel){
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
-                    Text("Nom du groupe : ${it.nom}")
+                    Text(
+                        text = "Nom du groupe : ${groupe.nom}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    groupe.membres.forEach { membre ->
+                        Text(
+                            text = "${membre.prenom} ${membre.nom} (${membre.points} pts)",
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                        )
+                    }
                 }
             }
         }

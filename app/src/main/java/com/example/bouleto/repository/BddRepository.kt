@@ -30,4 +30,8 @@ class BddRepository(context: Context) {
     suspend fun addGroupe(groupe: Groupe) = dao.addGroupe(groupe)
 
     suspend fun deleteGroupe(id: Int) = dao.deleteGroupe(id)
+
+    suspend fun getGroupeById(id : Int) : Groupe = dao.getGroupeById(id)
+
+    suspend fun deleteAll() = dao.deleteAll()
 }
