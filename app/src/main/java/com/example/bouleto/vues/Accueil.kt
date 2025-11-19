@@ -22,28 +22,28 @@ import androidx.compose.ui.unit.sp
 import kotlin.math.abs
 
 @Composable
-fun Accueil(membres: List<Membre>) {
+fun Accueil(membreOlds: List<MembreOld>) {
     // On trie par points décroissants
-    val membresTries = membres.sortedByDescending { it.points }
+    val membresTries = membreOlds.sortedByDescending { it.points }
 
-    TableauClassement(membres = membresTries)
+    TableauClassement(membreOlds = membresTries)
 }
 
 @Composable
 fun CartePerso(
-    membre: Membre,
+    membreOld: MembreOld,
     position: Int
 ) {
     // 1. Calcul des initiales
-    val initiales = remember(membre.prenom, membre.nom) {
-        val p = membre.prenom.firstOrNull()?.toString() ?: ""
-        val n = membre.nom.firstOrNull()?.toString() ?: ""
+    val initiales = remember(membreOld.prenom, membreOld.nom) {
+        val p = membreOld.prenom.firstOrNull()?.toString() ?: ""
+        val n = membreOld.nom.firstOrNull()?.toString() ?: ""
         (p + n).uppercase()
     }
 
     // 2. Génération de couleur aléatoire stable (basée sur le hash du nom)
-    val couleurAvatar = remember(membre.id) {
-        genererCouleurAleatoire(membre.prenom + membre.nom)
+    val couleurAvatar = remember(membreOld.id) {
+        genererCouleurAleatoire(membreOld.prenom + membreOld.nom)
     }
 
     Row(
@@ -103,13 +103,13 @@ fun CartePerso(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Text(
-                    text = "${membre.prenom} ${membre.nom}",
+                    text = "${membreOld.prenom} ${membreOld.nom}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color(0xFF1A1A1A)
                 )
                 Text(
-                    text = "${membre.points} pts",
+                    text = "${membreOld.points} pts",
                     fontSize = 14.sp,
                     color = Color(0xFF757575)
                 )
@@ -135,7 +135,7 @@ fun CartePerso(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = membre.points.toString(),
+                    text = membreOld.points.toString(),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = badgeColor
@@ -147,7 +147,7 @@ fun CartePerso(
 
 
 @Composable
-fun TableauClassement(membres: List<Membre>) {
+fun TableauClassement(membreOlds: List<MembreOld>) {
     Column (
         modifier = Modifier
             .padding(10.dp,5.dp,10.dp,5.dp)
@@ -183,9 +183,9 @@ fun TableauClassement(membres: List<Membre>) {
                 }
             }
 
-            itemsIndexed(membres) { index, membre ->
+            itemsIndexed(membreOlds) { index, membre ->
                 CartePerso(
-                    membre = membre,
+                    membreOld = membre,
                     position = index + 1
                 )
                 // Petit séparateur discret sauf pour le dernier

@@ -1,11 +1,10 @@
 package com.example.bouleto
 
 import com.example.bouleto.vues.Accueil
-import com.example.bouleto.vues.Groupe
+import com.example.bouleto.vues.GroupeOld
 import com.example.bouleto.vues.MenuGroupes
 
 
-import android.R.attr.icon
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,8 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.fitInside
-import com.example.bouleto.vues.Membre
+import com.example.bouleto.vues.MembreOld
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,7 +49,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,10 +57,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 
-import com.example.bouleto.ui.theme.BouletoTheme
 import com.example.bouleto.vues.Carte
 import com.example.bouleto.vues.Parametres
 import com.example.bouleto.vues.PopUpAjoutPointBoulet
@@ -249,27 +246,27 @@ fun Main() {
     val backStack = remember { mutableStateListOf<Any>(DestinationAccueil()) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    //var afficherDialogPoint = remember { mutableStateOf(false) }
     var afficherDialogPoint = remember { mutableStateOf(false) }
+    val bddRepository = viewModel<MainViewmodel>()
 
     // Liste des membres avec état modifiable
     var membres = remember {
         mutableStateOf(listOf(
-            Membre("Alice", "Dupont", points = 5, groupe = "Groupe A"),
-            Membre("Bob", "Martin", points = 3, groupe = "Groupe B")
+            MembreOld("Alice", "Dupont", points = 5, groupe = "Groupe A"),
+            MembreOld("Bob", "Martin", points = 3, groupe = "Groupe B")
             // etc...
         ))
     }
 
 
-    val groupes = remember {
+    val groupeOlds = remember {
         mutableStateListOf(
-            Groupe(
+            GroupeOld(
                 nom = "Famille",
-                membres = listOf(
-                    Membre(prenom = "Papa", nom = "Dupont"),
-                    Membre(prenom = "Maman", nom = "Dupont"),
-                    Membre(prenom = "Enfant1", nom = "Dupont"),
+                membreOlds = listOf(
+                    MembreOld(prenom = "Papa", nom = "Dupont"),
+                    MembreOld(prenom = "Maman", nom = "Dupont"),
+                    MembreOld(prenom = "Enfant1", nom = "Dupont"),
                 ),
                 initiales = "FA",
                 couleur = Color(0xFFFFA726),
@@ -282,7 +279,7 @@ fun Main() {
         drawerState = drawerState,
         drawerContent = {
             MenuGroupes(
-                groupes = groupes,
+                groupeOlds = groupeOlds,
                 onClose = { scope.launch { drawerState.close() } },
                 onCreerGroupe = { scope.launch { drawerState.close() } },
                 onSelectGroupe = { groupe ->
@@ -337,18 +334,18 @@ fun Main() {
 
                         if (afficherDialogPoint.value) {
                             PopUpAjoutPointBoulet(
-                                groupes = groupes.toList(),
+                                groupeOlds = groupeOlds.toList(),
                                 onDismiss = { afficherDialogPoint.value = false },
                                 onConfirm = { membreSelectionne, pointsAjoutes, description ->
                                     // 1. Trouver l'index du groupe qui contient ce membre
-                                    val groupIndex = groupes.indexOfFirst { groupe ->
-                                        groupe.membres.any { it.id == membreSelectionne.id }
+                                    val groupIndex = groupeOlds.indexOfFirst { groupe ->
+                                        groupe.membreOlds.any { it.id == membreSelectionne.id }
                                     }
 
                                     if (groupIndex != -1) {
                                         // 2. Créer une nouvelle version du groupe avec le membre mis à jour
-                                        val groupeActuel = groupes[groupIndex]
-                                        val membresMisenJour = groupeActuel.membres.map { m ->
+                                        val groupeActuel = groupeOlds[groupIndex]
+                                        val membresMisenJour = groupeActuel.membreOlds.map { m ->
                                             if (m.id == membreSelectionne.id) {
                                                 // On crée une COPIE du membre avec les nouveaux points
                                                 m.copy(points = m.points + pointsAjoutes)
@@ -358,7 +355,7 @@ fun Main() {
                                         }
 
                                         // 3. IMPORTANT : Remplacer l'élément dans la MutableList pour déclencher la recomposition
-                                        groupes[groupIndex] = groupeActuel.copy(membres = membresMisenJour)
+                                        groupeOlds[groupIndex] = groupeActuel.copy(membreOlds = membresMisenJour)
                                     }
 
                                     // 4. Fermer la fenêtre
@@ -379,9 +376,9 @@ fun Main() {
                             is DestinationAccueil -> NavEntry(key) {
                                 //Accueil()
                                 //Accueil(membres = membres.value)
-                                val tousLesMembres = groupes.flatMap { it.membres }
+                                val tousLesMembres = groupeOlds.flatMap { it.membreOlds }
 
-                                Accueil(membres = tousLesMembres)
+                                Accueil(membreOlds = tousLesMembres)
                             }
 
                             is DestinationCarte -> NavEntry(key) {
@@ -389,7 +386,7 @@ fun Main() {
                             }
 
                             is DestinationParametres -> NavEntry(key) {
-                                Parametres()
+                                Parametres(viewModel = bddRepository)
                             }
 
                             else -> {

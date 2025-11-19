@@ -1,8 +1,6 @@
 package com.example.bouleto.vues
 
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -20,11 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextFieldDefaults
 
 
-data class Membre(
+data class MembreOld(
     val prenom: String,
     val nom: String,
     val id: String = "${System.currentTimeMillis()}_${(0..1000).random()}",
@@ -36,12 +33,12 @@ data class Membre(
 @Composable
 fun FormulaireGroupe(
     onDismiss: () -> Unit,
-    onValider: (String, List<Membre>) -> Unit
+    onValider: (String, List<MembreOld>) -> Unit
 ) {
     var nomGroupe by remember { mutableStateOf("") }
     var prenomActuel by remember { mutableStateOf("") }
     var nomActuel by remember { mutableStateOf("") }
-    var membres by remember { mutableStateOf(listOf<Membre>()) }
+    var membreOlds by remember { mutableStateOf(listOf<MembreOld>()) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -147,7 +144,7 @@ fun FormulaireGroupe(
                     TextButton(
                         onClick = {
                             if (prenomActuel.isNotBlank() && nomActuel.isNotBlank()) {
-                                membres = membres + Membre(prenomActuel, nomActuel)
+                                membreOlds = membreOlds + MembreOld(prenomActuel, nomActuel)
                                 prenomActuel = ""
                                 nomActuel = ""
                             }
@@ -223,7 +220,7 @@ fun FormulaireGroupe(
                     }
 
                     // Membres déjà ajoutés
-                    itemsIndexed(membres) { index, membre ->
+                    itemsIndexed(membreOlds) { index, membre ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -259,7 +256,7 @@ fun FormulaireGroupe(
 
                             IconButton(
                                 onClick = {
-                                    membres = membres.filterIndexed { i, _ -> i != index }
+                                    membreOlds = membreOlds.filterIndexed { i, _ -> i != index }
                                 },
                                 modifier = Modifier.size(24.dp)
                             ) {
@@ -279,15 +276,15 @@ fun FormulaireGroupe(
                 // Bouton Créer le groupe
                 Button(
                     onClick = {
-                        if (nomGroupe.isNotBlank() && membres.isNotEmpty()) {
-                            onValider(nomGroupe, membres)
+                        if (nomGroupe.isNotBlank() && membreOlds.isNotEmpty()) {
+                            onValider(nomGroupe, membreOlds)
                             onDismiss()
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(40.dp),
-                    enabled = nomGroupe.isNotBlank() && membres.isNotEmpty(),
+                    enabled = nomGroupe.isNotBlank() && membreOlds.isNotEmpty(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFFFA726)
                     ),

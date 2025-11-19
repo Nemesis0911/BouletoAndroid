@@ -19,17 +19,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.bouleto.vues.FormulaireGroupe
-import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.example.bouleto.vues.Membre
 
 
 // Modèle de données pour les groupes
-data class Groupe(
+data class GroupeOld(
     val nom: String,
-    val membres: List<Membre> = emptyList(),  // ← AJOUTE CETTE LIGNE
-    val nbMembres: Int = membres.size,  // ← Calculé automatiquement
+    val membreOlds: List<MembreOld> = emptyList(),  // ← AJOUTE CETTE LIGNE
+    val nbMembres: Int = membreOlds.size,  // ← Calculé automatiquement
     val initiales: String,
     val couleur: Color,
     val estSelectionne: Boolean = false
@@ -37,10 +34,10 @@ data class Groupe(
 
 @Composable
 fun MenuGroupes(
-    groupes: SnapshotStateList<Groupe>,
+    groupeOlds: SnapshotStateList<GroupeOld>,
     onClose: () -> Unit,
     onCreerGroupe: () -> Unit,
-    onSelectGroupe: (Groupe) -> Unit
+    onSelectGroupe: (GroupeOld) -> Unit
 ) {
     ModalDrawerSheet(
         modifier = Modifier.fillMaxWidth(0.85f),
@@ -126,9 +123,9 @@ fun MenuGroupes(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                items(groupes) { groupe ->
+                items(groupeOlds) { groupe ->
                     CarteGroupe(
-                        groupe = groupe,
+                        groupeOld = groupe,
                         onClick = { onSelectGroupe(groupe) }
                     )
                 }
@@ -161,8 +158,8 @@ fun MenuGroupes(
                         )
                         val couleur = couleurs.random()
 
-                        groupes.add(
-                            Groupe(
+                        groupeOlds.add(
+                            GroupeOld(
                                 nom = nomGroupe,
                                 nbMembres = membres.size,
                                 initiales = initiales,
@@ -182,7 +179,7 @@ fun MenuGroupes(
 
 @Composable
 fun CarteGroupe(
-    groupe: Groupe,
+    groupeOld: GroupeOld,
     onClick: () -> Unit
 ) {
     Row(
@@ -190,11 +187,11 @@ fun CarteGroupe(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .border(
-                width = if (groupe.estSelectionne) 2.dp else 1.dp,
-                color = if (groupe.estSelectionne) Color(0xFFFFA726) else Color(0xFFE0E0E0),
+                width = if (groupeOld.estSelectionne) 2.dp else 1.dp,
+                color = if (groupeOld.estSelectionne) Color(0xFFFFA726) else Color(0xFFE0E0E0),
                 shape = RoundedCornerShape(12.dp)
             )
-            .background(if (groupe.estSelectionne) Color(0xFFFFF8E1) else Color.White)
+            .background(if (groupeOld.estSelectionne) Color(0xFFFFF8E1) else Color.White)
             .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -208,11 +205,11 @@ fun CarteGroupe(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(groupe.couleur),
+                    .background(groupeOld.couleur),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = groupe.initiales,
+                    text = groupeOld.initiales,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -221,20 +218,20 @@ fun CarteGroupe(
 
             Column {
                 Text(
-                    text = groupe.nom,
+                    text = groupeOld.nom,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF1A1A1A)
                 )
                 Text(
-                    text = "${groupe.nbMembres} membre${if (groupe.nbMembres > 1) "s" else ""}",
+                    text = "${groupeOld.nbMembres} membre${if (groupeOld.nbMembres > 1) "s" else ""}",
                     fontSize = 14.sp,
                     color = Color(0xFF999999)
                 )
             }
         }
 
-        if (groupe.estSelectionne) {
+        if (groupeOld.estSelectionne) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Sélectionné",
