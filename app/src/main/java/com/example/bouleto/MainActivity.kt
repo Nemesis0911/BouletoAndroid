@@ -62,9 +62,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
+
 import com.example.bouleto.ui.theme.BouletoTheme
 import com.example.bouleto.vues.Carte
 import com.example.bouleto.vues.Parametres
+import com.example.bouleto.vues.PopUpAjoutPointBoulet
 import kotlinx.coroutines.launch
 
 class DestinationAccueil
@@ -247,7 +249,17 @@ fun Main() {
     val backStack = remember { mutableStateListOf<Any>(DestinationAccueil()) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    //var afficherDialogPoint = remember { mutableStateOf(false) }
     var afficherDialogPoint = remember { mutableStateOf(false) }
+
+    // Liste des membres avec état modifiable
+    var membres = remember {
+        mutableStateOf(listOf(
+            Membre("Alice", "Dupont", points = 5, groupe = "Groupe A"),
+            Membre("Bob", "Martin", points = 3, groupe = "Groupe B")
+            // etc...
+        ))
+    }
 
 
     val groupes = remember {
@@ -325,9 +337,16 @@ fun Main() {
 
                         if (afficherDialogPoint.value) {
                             PopUpAjoutPointBoulet(
-                                groupes = groupes.toList(),  // <- GARDE .toList()
+                                groupes = groupes.toList(),
                                 onDismiss = { afficherDialogPoint.value = false },
-                                onConfirm = { membre, points, description ->
+                                onConfirm = { membre, pointsAjoutes, description ->
+                                    membres.value = membres.value.map { m ->
+                                        if (m.id == membre.id) {
+                                            m.copy(points = m.points + pointsAjoutes)
+                                        } else {
+                                            m
+                                        }
+                                    }
                                     afficherDialogPoint.value = false
                                 }
                             )
@@ -342,7 +361,11 @@ fun Main() {
                     entryProvider = { key ->
                         when (key) {
                             is DestinationAccueil -> NavEntry(key) {
-                                Accueil()
+                                //Accueil()
+                                //Accueil(membres = membres.value)
+                                val tousLesMembres = groupes.flatMap { it.membres }
+
+                                Accueil(membres = tousLesMembres)
                             }
 
                             is DestinationCarte -> NavEntry(key) {

@@ -1,4 +1,4 @@
-package com.example.bouleto
+package com.example.bouleto.vues
 
 
 import androidx.compose.foundation.layout.*
@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.bouleto.vues.Groupe
+import com.example.bouleto.vues.FormulaireGroupe
 import com.example.bouleto.vues.Membre
 
 
@@ -37,14 +37,18 @@ fun PopUpAjoutPointBoulet(
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = Color.White,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                //.padding(10.dp),
+            .padding(horizontal = 8.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White,
+            shadowElevation = 8.dp
         ) {
             Column(
-                modifier = Modifier.padding(24.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
             ) {
                 // En-tête
                 Row(
@@ -52,24 +56,30 @@ fun PopUpAjoutPointBoulet(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
                             tint = Color(0xFFFFB300),
                             modifier = Modifier.size(28.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(5.dp))
+
                         Text(
                             text = "Ajouter un point boulet",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(end=5.dp)
                         )
                     }
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Fermer"
+                            contentDescription = "Fermer",
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 }
@@ -179,9 +189,13 @@ fun PopUpAjoutPointBoulet(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            membreSelectionne?.let { membre ->
-                                val points = nombrePoints.toIntOrNull() ?: 2
-                                onConfirm(membre, points, description)
+                            // ✅ Correction : On utilise les bonnes variables et on convertit le texte en nombre
+                            if (membreSelectionne != null) {
+                                onConfirm(
+                                    membreSelectionne!!,
+                                    nombrePoints.toIntOrNull() ?: 0,
+                                    description
+                                )
                             }
                         },
                         colors = ButtonDefaults.buttonColors(

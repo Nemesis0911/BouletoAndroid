@@ -1,9 +1,7 @@
 package com.example.bouleto.vues
 
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -13,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,37 +19,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-
-// Data class pour représenter un joueur
-data class Joueur(
-    val nom: String,
-    val initiales: String,
-    val points: Int,
-    val couleurAvatar: Color
-)
-
+import kotlin.math.abs
 
 @Composable
-fun Accueil() {
-    val joueursExemple = listOf(
-        Joueur("Sophie Martin", "SM", 32, Color(0xFFFFA726)),
-        Joueur("Thomas Dubois", "TD", 28, Color(0xFF26C6DA)),
-        Joueur("Julie Lefebvre", "JL", 19, Color(0xFFFFA726)),
-        Joueur("Marc Petit", "MP", 15, Color(0xFF80CBC4)),
-        Joueur("Emma Bernard", "EB", 12, Color(0xFFFFA726)),
-        Joueur("Lucas Moreau", "LM", 9, Color(0xFF26C6DA)),
-        Joueur("Camille Roux", "CR", 7, Color(0xFFFFA726))
-    )
+fun Accueil(membres: List<Membre>) {
+    // On trie par points décroissants
+    val membresTries = membres.sortedByDescending { it.points }
 
-    TableauClassement(joueurs = joueursExemple)
+    TableauClassement(membres = membresTries)
 }
 
 @Composable
 fun CartePerso(
-    joueur: Joueur,
+    membre: Membre,
     position: Int
 ) {
+    // 1. Calcul des initiales
+    val initiales = remember(membre.prenom, membre.nom) {
+        val p = membre.prenom.firstOrNull()?.toString() ?: ""
+        val n = membre.nom.firstOrNull()?.toString() ?: ""
+        (p + n).uppercase()
+    }
+
+    // 2. Génération de couleur aléatoire stable (basée sur le hash du nom)
+    val couleurAvatar = remember(membre.id) {
+        genererCouleurAleatoire(membre.prenom + membre.nom)
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -58,20 +53,19 @@ fun CartePerso(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Partie gauche : icône position + avatar + infos
+        // Partie gauche
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Icône de position ou numéro
+            // Icône de position
             if (position <= 3) {
                 val iconColor = when (position) {
-                    1 -> Color(0xFFFFA726) // Orange
-                    2 -> Color(0xFF26C6DA) // Cyan
-                    3 -> Color(0xFFFFA726) // Orange pour 3ème aussi
+                    1 -> Color(0xFFFFB300) // Or
+                    2 -> Color(0xFF90CAF9) // Argent/Bleu clair
+                    3 -> Color(0xFFEF9A9A) // Bronze/Rouge clair
                     else -> Color.Gray
                 }
-
                 Icon(
                     imageVector = Icons.Outlined.Star,
                     contentDescription = "Position $position",
@@ -79,44 +73,43 @@ fun CartePerso(
                     modifier = Modifier.size(28.dp)
                 )
             } else {
-                // Afficher le numéro pour les positions 4+
                 Text(
                     text = "#$position",
                     fontSize = 16.sp,
                     color = Color(0xFF9E9E9E),
                     fontWeight = FontWeight.Medium,
-                    modifier = Modifier.width(28.dp)
+                    modifier = Modifier.width(28.dp) // Largeur fixe pour alignement
                 )
             }
 
-            // Avatar avec initiales
+            // Avatar Coloré
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(joueur.couleurAvatar),
+                    .background(couleurAvatar),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = joueur.initiales,
+                    text = initiales,
                     color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            // Nom et points
+            // Infos
             Column(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Text(
-                    text = joueur.nom,
+                    text = "${membre.prenom} ${membre.nom}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color(0xFF1A1A1A)
                 )
                 Text(
-                    text = "${joueur.points} pts",
+                    text = "${membre.points} pts",
                     fontSize = 14.sp,
                     color = Color(0xFF757575)
                 )
@@ -125,10 +118,10 @@ fun CartePerso(
 
         // Badge de points à droite
         val badgeColor = when (position) {
-            1 -> Color(0xFFFFA726) // Orange
-            2 -> Color(0xFF26C6DA) // Cyan
-            3 -> Color(0xFFFFA726) // Orange
-            else -> Color(0xFF9E9E9E) // Gris
+            1 -> Color(0xFFFFB300)
+            2 -> Color(0xFF90CAF9)
+            3 -> Color(0xFFEF9A9A)
+            else -> Color(0xFF9E9E9E)
         }
 
         Surface(
@@ -142,7 +135,7 @@ fun CartePerso(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = joueur.points.toString(),
+                    text = membre.points.toString(),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = badgeColor
@@ -154,8 +147,7 @@ fun CartePerso(
 
 
 @Composable
-fun TableauClassement(joueurs: List<Joueur>) {
-
+fun TableauClassement(membres: List<Membre>) {
     Column (
         modifier = Modifier
             .padding(10.dp,5.dp,10.dp,5.dp)
@@ -167,7 +159,6 @@ fun TableauClassement(joueurs: List<Joueur>) {
                 .background(Color.White),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // En-tête du tableau qui scrolle
             item {
                 Row(
                     modifier = Modifier
@@ -180,11 +171,11 @@ fun TableauClassement(joueurs: List<Joueur>) {
                     Icon(
                         imageVector = Icons.Outlined.Star,
                         contentDescription = "Classement",
-                        tint = Color(0xFFFFA726),
+                        tint = Color(0xFFFFB300),
                         modifier = Modifier.size(28.dp)
                     )
                     Text(
-                        text = "Classement",
+                        text = "Classement Boulets",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF1A1A1A)
@@ -192,14 +183,42 @@ fun TableauClassement(joueurs: List<Joueur>) {
                 }
             }
 
-            // Liste des joueurs
-            itemsIndexed(joueurs) { index, joueur ->
+            itemsIndexed(membres) { index, membre ->
                 CartePerso(
-                    joueur = joueur,
+                    membre = membre,
                     position = index + 1
                 )
+                // Petit séparateur discret sauf pour le dernier
+//                if (index < membres.size - 1) {
+//                    Divider(
+//                        color = Color.LightGray.copy(alpha = 0.3f),
+//                        thickness = 1.dp,
+//                        modifier = Modifier.padding(horizontal = 16.dp)
+//                    )
+//                }
             }
         }
     }
 }
 
+// Fonction utilitaire pour générer une couleur sympa
+fun genererCouleurAleatoire(cle: String): Color {
+    val couleurs = listOf(
+        Color(0xFFEF5350), // Rouge
+        Color(0xFFEC407A), // Rose
+        Color(0xFFAB47BC), // Violet
+        Color(0xFF7E57C2), // Violet foncé
+        Color(0xFF5C6BC0), // Indigo
+        Color(0xFF42A5F5), // Bleu
+        Color(0xFF26C6DA), // Cyan
+        Color(0xFF26A69A), // Teal
+        Color(0xFF66BB6A), // Vert
+        Color(0xFF9CCC65), // Vert clair
+        Color(0xFFFFCA28), // Ambre
+        Color(0xFFFF7043), // Orange foncé
+        Color(0xFF8D6E63)  // Marron
+    )
+    // On utilise le hashCode de la chaîne (ex: "JeanDupont") pour choisir toujours la même couleur pour la même personne
+    val index = abs(cle.hashCode()) % couleurs.size
+    return couleurs[index]
+}

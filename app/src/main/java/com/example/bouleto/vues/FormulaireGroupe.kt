@@ -27,7 +27,9 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 data class Membre(
     val prenom: String,
     val nom: String,
-    val id: String = "${System.currentTimeMillis()}_${(0..1000).random()}"
+    val id: String = "${System.currentTimeMillis()}_${(0..1000).random()}",
+    var points: Int = 0,
+    val groupe: String = ""
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
