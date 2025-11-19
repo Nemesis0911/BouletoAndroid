@@ -339,16 +339,32 @@ fun Main() {
                             PopUpAjoutPointBoulet(
                                 groupes = groupes.toList(),
                                 onDismiss = { afficherDialogPoint.value = false },
-                                onConfirm = { membre, pointsAjoutes, description ->
-                                    membres.value = membres.value.map { m ->
-                                        if (m.id == membre.id) {
-                                            m.copy(points = m.points + pointsAjoutes)
-                                        } else {
-                                            m
-                                        }
+                                onConfirm = { membreSelectionne, pointsAjoutes, description ->
+                                    // 1. Trouver l'index du groupe qui contient ce membre
+                                    val groupIndex = groupes.indexOfFirst { groupe ->
+                                        groupe.membres.any { it.id == membreSelectionne.id }
                                     }
+
+                                    if (groupIndex != -1) {
+                                        // 2. Créer une nouvelle version du groupe avec le membre mis à jour
+                                        val groupeActuel = groupes[groupIndex]
+                                        val membresMisenJour = groupeActuel.membres.map { m ->
+                                            if (m.id == membreSelectionne.id) {
+                                                // On crée une COPIE du membre avec les nouveaux points
+                                                m.copy(points = m.points + pointsAjoutes)
+                                            } else {
+                                                m
+                                            }
+                                        }
+
+                                        // 3. IMPORTANT : Remplacer l'élément dans la MutableList pour déclencher la recomposition
+                                        groupes[groupIndex] = groupeActuel.copy(membres = membresMisenJour)
+                                    }
+
+                                    // 4. Fermer la fenêtre
                                     afficherDialogPoint.value = false
                                 }
+
                             )
                         }
                     }
