@@ -205,19 +205,11 @@ fun TableauClassement(membres: List<Membre>) {
 // Fonction utilitaire pour générer une couleur sympa
 fun genererCouleurAleatoire(cle: String): Color {
     val couleurs = listOf(
-        Color(0xFFEF5350), // Rouge
-        Color(0xFFEC407A), // Rose
-        Color(0xFFAB47BC), // Violet
-        Color(0xFF7E57C2), // Violet foncé
-        Color(0xFF5C6BC0), // Indigo
-        Color(0xFF42A5F5), // Bleu
-        Color(0xFF26C6DA), // Cyan
-        Color(0xFF26A69A), // Teal
-        Color(0xFF66BB6A), // Vert
-        Color(0xFF9CCC65), // Vert clair
-        Color(0xFFFFCA28), // Ambre
-        Color(0xFFFF7043), // Orange foncé
-        Color(0xFF8D6E63)  // Marron
+        Color(0xFFfe9d15),
+        Color(0xFFc0f0ee),
+        Color(0xFFfebb5f),
+        Color(0xFF2dbdb4),
+
     )
     // On utilise le hashCode de la chaîne (ex: "JeanDupont") pour choisir toujours la même couleur pour la même personne
     val index = abs(cle.hashCode()) % couleurs.size

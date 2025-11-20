@@ -275,7 +275,7 @@ fun Main() {
                 groupes = groupes,
                 onClose = { scope.launch { drawerState.close() } },
                 onCreerGroupe = { scope.launch { drawerState.close() } },
-                onSelectGroupe = { groupe ->
+                onCloseMenu = {
                     scope.launch { drawerState.close() }
                 },
                 viewmodel = viewModel()
@@ -370,7 +370,7 @@ fun Main() {
                             is DestinationAccueil -> NavEntry(key) {
                                 //Accueil()
                                 //Accueil(membres = membres.value)
-                                val tousLesMembres = groupes.flatMap { it.membres }
+                                val tousLesMembres = groupeSelectionne.value.membres
 
                                 Accueil(membres = tousLesMembres)
                             }

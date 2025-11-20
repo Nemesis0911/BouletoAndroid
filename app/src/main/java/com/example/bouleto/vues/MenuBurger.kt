@@ -41,9 +41,12 @@ fun MenuGroupes(
     groupes: List<Groupe>,
     onClose: () -> Unit,
     onCreerGroupe: () -> Unit,
-    onSelectGroupe: (Groupe) -> Unit,
+    onCloseMenu: () -> Unit,
     viewmodel: MainViewmodel
 ) {
+
+    val groupeSelectionne = viewmodel.groupeSelectionne.collectAsState()
+
     ModalDrawerSheet(
         modifier = Modifier.fillMaxWidth(0.85f),
         drawerContainerColor = Color.White
@@ -123,9 +126,7 @@ fun MenuGroupes(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            Text(
-                text = "Nombre de groupes : ${groupes.size}",
-            )
+
 
             // Liste des groupes
             LazyColumn(
@@ -135,8 +136,8 @@ fun MenuGroupes(
                 items(groupes) { groupe ->
                     CarteGroupe(
                         groupe = groupe,
-                        onClick = { onSelectGroupe(groupe) },
-                        viewModel = viewModel()
+                        onClick = { viewmodel.setGroupeSelectionne(groupe = groupe); onCloseMenu() },
+                        groupeSelectionne = groupeSelectionne
                     )
                 }
             }
@@ -163,8 +164,8 @@ fun MenuGroupes(
                     viewModel = viewModel(),
                     onValider = { nomGroupe, membres ->
                         val couleurs = listOf(
-                            Color(0xFFFFA726), Color(0xFF26A69A), Color(0xFFEC407A),
-                            Color(0xFF42A5F5), Color(0xFF9CCC65), Color(0xFF26A69A)
+                            Color(0xFFc0f0ee), Color(0xFFfebb5f), Color(0xFFfe9d15),
+                            Color(0xFF2dbdb4),
                         )
                         val couleur = couleurs.random()
 
@@ -189,11 +190,8 @@ fun MenuGroupes(
 fun CarteGroupe(
     groupe: Groupe,
     onClick: () -> Unit,
-    viewModel: MainViewmodel
+    groupeSelectionne: State<Groupe>,
 ) {
-    val groupeSelectionne = viewModel.groupeSelectionne.collectAsState()
-
-
     Row(
         modifier = Modifier
             .fillMaxWidth()

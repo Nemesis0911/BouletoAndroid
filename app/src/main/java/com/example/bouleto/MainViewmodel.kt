@@ -41,6 +41,11 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
         }
     }
 
+    fun setGroupeSelectionne(groupe : Groupe){
+        groupeSelectionne.value = groupe
+    }
+
+
     //liste de nos groupes
     val groupes = MutableStateFlow<List<Groupe>>(emptyList())
 
