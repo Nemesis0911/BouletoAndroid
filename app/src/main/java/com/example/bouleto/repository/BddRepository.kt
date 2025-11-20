@@ -1,6 +1,7 @@
 package com.example.bouleto.repository
 
 import android.content.Context
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -8,6 +9,7 @@ import androidx.room.Room
 import com.example.bouleto.database.AppDatabase
 import com.example.bouleto.models.Convertisseur
 import com.example.bouleto.models.Groupe
+import com.example.bouleto.models.Membre
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
@@ -31,7 +33,13 @@ class BddRepository(context: Context) {
 
     suspend fun deleteGroupe(id: Int) = dao.deleteGroupe(id)
 
-    suspend fun getGroupeById(id : Int) : Groupe = dao.getGroupeById(id)
 
+    suspend fun getGroupeById(id : Int) : Groupe = dao.getGroupeById(id)
     suspend fun deleteAll() = dao.deleteAll()
+
+    suspend fun updateGroupe(groupe: Groupe) {
+
+            dao.updateGroupe(groupe)
+    }
+
 }

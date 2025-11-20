@@ -328,39 +328,22 @@ fun Main() {
 
                         if (afficherDialogPoint.value) {
                             PopUpAjoutPointBoulet(
-                                groupes = groupes.toList(),
                                 onDismiss = { afficherDialogPoint.value = false },
                                 onConfirm = { membreSelectionne, pointsAjoutes, description ->
-                                    // 1. Trouver l'index du groupe qui contient ce membre
-                                    val groupIndex = groupes.indexOfFirst { groupe ->
-                                        groupe.membres.any { id == membreSelectionne.id }
-                                    }
-
-                                    if (groupIndex != -1) {
-                                        // 2. Créer une nouvelle version du groupe avec le membre mis à jour
-                                        val groupeActuel = groupes[groupIndex]
-                                        val membresMisenJour = groupeActuel.membres.map { m ->
-                                            if (m.id == membreSelectionne.id) {
-                                                // On crée une COPIE du membre avec les nouveaux points
-                                                m.copy(points = m.points + pointsAjoutes)
-                                            } else {
-                                                m
-                                            }
-                                        }
-
-                                        // 3. IMPORTANT : Remplacer l'élément dans la MutableList pour déclencher la recomposition
-                                        //groupes[groupIndex] = groupeActuel.copy(membres = membresMisenJour)
-                                    }
-
-                                    // 4. Fermer la fenêtre
+                                    viewModel.updateGroupe(groupeSelectionne.value, membreSelectionne, pointsAjoutes)
                                     afficherDialogPoint.value = false
-                                }
-
+                                    viewModel.getAll()
+                                    scope.launch {
+                                        kotlinx.coroutines.delay(200)
+                                        viewModel.getAll()
+                                    }
+                                },
+                                viewmodel = viewModel()
                             )
                         }
                     }
-
                 }
+
                 Spacer(modifier = Modifier.height(8.dp))
                 NavDisplay(
                     backStack = backStack,
@@ -370,9 +353,10 @@ fun Main() {
                             is DestinationAccueil -> NavEntry(key) {
                                 //Accueil()
                                 //Accueil(membres = membres.value)
-                                val tousLesMembres = groupeSelectionne.value.membres
+                                val groupeAJour = groupes.find { it.id == groupeSelectionne.value.id} ?: groupeSelectionne.value
+                                //val tousLesMembres = groupeSelectionne.value.membres
 
-                                Accueil(membres = tousLesMembres)
+                                Accueil(membres = groupeAJour.membres)
                             }
 
                             is DestinationCarte -> NavEntry(key) {
@@ -390,7 +374,6 @@ fun Main() {
                     }
                 )
             }
-
         }
     }
 }

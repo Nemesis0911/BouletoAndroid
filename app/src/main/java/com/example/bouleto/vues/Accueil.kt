@@ -189,14 +189,6 @@ fun TableauClassement(membres: List<Membre>) {
                     membre = membre,
                     position = index + 1
                 )
-                // Petit séparateur discret sauf pour le dernier
-//                if (index < membres.size - 1) {
-//                    Divider(
-//                        color = Color.LightGray.copy(alpha = 0.3f),
-//                        thickness = 1.dp,
-//                        modifier = Modifier.padding(horizontal = 16.dp)
-//                    )
-//                }
             }
         }
     }

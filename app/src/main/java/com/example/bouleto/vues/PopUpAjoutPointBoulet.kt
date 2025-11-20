@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.bouleto.MainViewmodel
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
 
@@ -22,17 +23,19 @@ import com.example.bouleto.models.Membre
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PopUpAjoutPointBoulet(
-    groupes: List<Groupe>,  // <- Garde List, pas SnapshotStateList
     onDismiss: () -> Unit,
-    onConfirm: (Membre, Int, String) -> Unit
+    onConfirm: (Membre, Int, String) -> Unit,
+    viewmodel: MainViewmodel
 ) {
     var membreSelectionne by remember { mutableStateOf<Membre?>(null) }
     var nombrePoints by remember { mutableStateOf("2") }
     var description by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
+    val groupeSelectionne = viewmodel.groupeSelectionne.collectAsState()
 
     // Liste de tous les membres de tous les groupes
-    val tousLesMembres = groupes.flatMap { it.membres }
+    val tousLesMembres = groupeSelectionne.value.membres
+
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -188,7 +191,7 @@ fun PopUpAjoutPointBoulet(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            // ✅ Correction : On utilise les bonnes variables et on convertit le texte en nombre
+
                             if (membreSelectionne != null) {
                                 onConfirm(
                                     membreSelectionne!!,

@@ -66,5 +66,8 @@ interface GroupeDao{
 
     @Query("DELETE FROM Groupe")
     suspend fun deleteAll()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateGroupe(groupe: Groupe)
 }
 

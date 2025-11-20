@@ -1,10 +1,12 @@
 package com.example.bouleto
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bouleto.models.Groupe
+import com.example.bouleto.models.Membre
 import com.example.bouleto.repository.BddRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,12 +22,19 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
             groupes.value = bddRepository.getAll()
         }
     }
-    fun addGroupe(groupe : Groupe) {
+    fun addGroupe(groupe: Groupe) {
         viewModelScope.launch {
-            bddRepository.addGroupe(groupe)
+            val membresAvecId = groupe.membres.mapIndexed { index, membre ->
+                membre.copy(id = System.currentTimeMillis().toInt() + index)
+            }
+
+            val groupeAvecIds = groupe.copy(membres = membresAvecId)
+
+            bddRepository.addGroupe(groupeAvecIds)
             getAll()
         }
     }
+
 
     fun deleteGroupe(id : Int) {
         viewModelScope.launch {
@@ -45,13 +54,16 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
         groupeSelectionne.value = groupe
     }
 
+    fun updateGroupe(groupe: Groupe, membre: Membre, points: Int){
+        groupe.membres.filter { it.id == membre.id }.forEach { it.points += points }
+        viewModelScope.launch {
+            bddRepository.updateGroupe(groupe)
+        }
+    }
 
     //liste de nos groupes
     val groupes = MutableStateFlow<List<Groupe>>(emptyList())
 
     val groupeSelectionne = MutableStateFlow<Groupe>(Groupe(id = -1, nom = "test", couleur = androidx.compose.ui.graphics.Color.Blue))
-
-
-
 }
 

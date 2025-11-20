@@ -26,16 +26,6 @@ import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
 
 
-// Modèle de données pour les groupes
-//data class Groupe(
-//    val nom: String,
-//    val membres: List<Membre> = emptyList(),
-//    val nbMembres: Int = membres.size,
-//    val initiales: String,
-//    val couleur: Color,
-//    val estSelectionne: Boolean = false
-//)
-
 @Composable
 fun MenuGroupes(
     groupes: List<Groupe>,
@@ -136,6 +126,7 @@ fun MenuGroupes(
                 items(groupes) { groupe ->
                     CarteGroupe(
                         groupe = groupe,
+                        membre = groupe.membres[0],
                         onClick = { viewmodel.setGroupeSelectionne(groupe = groupe); onCloseMenu() },
                         groupeSelectionne = groupeSelectionne
                     )
@@ -190,6 +181,7 @@ fun MenuGroupes(
 fun CarteGroupe(
     groupe: Groupe,
     onClick: () -> Unit,
+    membre: Membre,
     groupeSelectionne: State<Groupe>,
 ) {
     Row(
@@ -218,8 +210,20 @@ fun CarteGroupe(
                     .background(groupe.couleur),
                 contentAlignment = Alignment.Center
             ) {
+
+                val initiales = remember(groupe.nom) {
+                    val mots = groupe.nom.trim().split(" ").filter { it.isNotEmpty() }
+
+                    if (mots.size >= 2) {
+                        "${mots[0].first().uppercaseChar()}${mots[1].first().uppercaseChar()}"
+                    } else if (mots.isNotEmpty() && mots[0].length >= 2) {
+                        mots[0].take(2).uppercase()
+                    } else {
+                        mots.firstOrNull()?.first()?.uppercase()?.repeat(2) ?: "??"
+                    }
+                }
                 Text(
-                    text = "a faire",//groupe.initiales,
+                    text = initiales,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
