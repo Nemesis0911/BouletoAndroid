@@ -5,9 +5,11 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bouleto.models.ApiResponse
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
 import com.example.bouleto.models.Point
+import com.example.bouleto.repository.ApiRepository
 import com.example.bouleto.repository.BddRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +19,7 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
 
     //récupération du répository
     val bddRepository = BddRepository(application)
+    val apiRepository = ApiRepository()
 
     fun getAll() {
         viewModelScope.launch {
@@ -71,5 +74,16 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
     val groupes = MutableStateFlow<List<Groupe>>(emptyList())
 
     val groupeSelectionne = MutableStateFlow<Groupe>(Groupe(id = -1, nom = "test", couleur = androidx.compose.ui.graphics.Color.Blue))
+
+    // APIII
+
+    fun rechercheAdresse(adress: String) {
+        viewModelScope.launch {
+            apiRepository.rechercheAdresse(adress)
+            Log.d("rechercheAdresse", "Adresse trouvée: ${apiRepository.rechercheAdresse(adress).results.first()}")
+        }
+    }
+
+    val resultatApi = MutableStateFlow<ApiResponse>(ApiResponse(results = emptyList(), status = ""))
 }
 
