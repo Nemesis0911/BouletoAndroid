@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
+import com.example.bouleto.models.Point
 import com.example.bouleto.repository.BddRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,10 +55,15 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
         groupeSelectionne.value = groupe
     }
 
-    fun updateGroupe(groupe: Groupe, membre: Membre, points: Int){
-        groupe.membres.filter { it.id == membre.id }.forEach { it.points += points }
+    fun updateGroupe(groupe: Groupe, membre: Membre, score: Int, lat: Double, long: Double) {
+        val point = Point(score = score, latidute = lat, longitude = long)
+        Log.d("updateGroupe", "Point ajouté: ${point.score}")
+        var membreSelec = groupe.membres.filter { it.id == membre.id }.first()
+        membreSelec.point = membreSelec.point.plus(point)
+
         viewModelScope.launch {
             bddRepository.updateGroupe(groupe)
+            getAll()
         }
     }
 

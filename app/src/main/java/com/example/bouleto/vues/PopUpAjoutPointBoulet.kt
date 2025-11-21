@@ -1,13 +1,18 @@
 package com.example.bouleto.vues
 
-
+import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,34 +20,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.bouleto.MainViewmodel
+import androidx.compose.ui.window.DialogProperties
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PopUpAjoutPointBoulet(
     onDismiss: () -> Unit,
     onConfirm: (Membre, Int, String) -> Unit,
-    viewmodel: MainViewmodel
+    groupeSelectionnee: Groupe
 ) {
     var membreSelectionne by remember { mutableStateOf<Membre?>(null) }
     var nombrePoints by remember { mutableStateOf("2") }
     var description by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-    val groupeSelectionne = viewmodel.groupeSelectionne.collectAsState()
 
-    // Liste de tous les membres de tous les groupes
-    val tousLesMembres = groupeSelectionne.value.membres
+    val membres = groupeSelectionnee.membres
 
-
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = false
+        )
+    ) {
         Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                //.padding(10.dp),
-            .padding(horizontal = 8.dp),
+                .fillMaxWidth(0.9f)
+                .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
             color = Color.White,
             shadowElevation = 8.dp
@@ -68,38 +75,34 @@ fun PopUpAjoutPointBoulet(
                             tint = Color(0xFFFFB300),
                             modifier = Modifier.size(28.dp)
                         )
-                        Spacer(modifier = Modifier.width(5.dp))
-
                         Text(
                             text = "Ajouter un point boulet",
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(end=5.dp)
+                            fontWeight = FontWeight.Bold
                         )
                     }
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Fermer",
-                            modifier = Modifier.size(28.dp)
+                            contentDescription = "Fermer"
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Sélection du membre
                 Text(
-                    text = "Membre",
+                    text = "Sélectionner un membre",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
+                // ✅ BOX AVEC DROPDOWN CLASSIQUE
+                Box(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     OutlinedTextField(
                         value = membreSelectionne?.let { "${it.prenom} ${it.nom}" } ?: "",
@@ -107,29 +110,49 @@ fun PopUpAjoutPointBoulet(
                         readOnly = true,
                         placeholder = { Text("Sélectionner un membre") },
                         trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            IconButton(onClick = { expanded = !expanded }) {
+                                Icon(
+                                    imageVector = if (expanded)
+                                        Icons.Default.KeyboardArrowUp
+                                    else
+                                        Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null
+                                )
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor(),
+                            .clickable { expanded = true },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFFFB300),
                             unfocusedBorderColor = Color.LightGray
                         )
                     )
 
-                    ExposedDropdownMenu(
+                    // ✅ DROPDOWN MENU AVEC LARGEUR LIMITÉE
+                    DropdownMenu(
                         expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier
+                            .fillMaxWidth(0.85f)
+                            .heightIn(max = 200.dp)
                     ) {
-                        tousLesMembres.forEach { membre ->
+                        if (membres.isEmpty()) {
                             DropdownMenuItem(
-                                text = { Text("${membre.prenom} ${membre.nom}") },
-                                onClick = {
-                                    membreSelectionne = membre
-                                    expanded = false
-                                }
+                                text = { Text("Aucun membre dans ce groupe") },
+                                onClick = { },
+                                enabled = false
                             )
+                        } else {
+                            membres.forEach { membre ->
+                                DropdownMenuItem(
+                                    text = { Text("${membre.prenom} ${membre.nom}") },
+                                    onClick = {
+                                        membreSelectionne = membre
+                                        expanded = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -146,7 +169,8 @@ fun PopUpAjoutPointBoulet(
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = nombrePoints,
-                    onValueChange = { nombrePoints = it },
+                    onValueChange = { if (it.all { char -> char.isDigit() }) nombrePoints = it },
+                    placeholder = { Text("Ex: 2") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFFFFB300),
@@ -191,10 +215,9 @@ fun PopUpAjoutPointBoulet(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-
-                            if (membreSelectionne != null) {
+                            membreSelectionne?.let { membre ->
                                 onConfirm(
-                                    membreSelectionne!!,
+                                    membre,
                                     nombrePoints.toIntOrNull() ?: 0,
                                     description
                                 )

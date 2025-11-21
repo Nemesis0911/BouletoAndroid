@@ -25,7 +25,7 @@ import kotlin.math.abs
 @Composable
 fun Accueil(membres: List<Membre>) {
     // On trie par points décroissants
-    val membresTries = membres.sortedByDescending { it.points }
+    val membresTries = membres.sortedByDescending { it.scoreTotal }
 
     TableauClassement(membres = membresTries)
 }
@@ -110,7 +110,7 @@ fun CartePerso(
                     color = Color(0xFF1A1A1A)
                 )
                 Text(
-                    text = "${membre.points} pts",
+                    text = "${membre.scoreTotal} pts",
                     fontSize = 14.sp,
                     color = Color(0xFF757575)
                 )
@@ -136,7 +136,7 @@ fun CartePerso(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = membre.points.toString(),
+                    text = membre.scoreTotal.toString(),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = badgeColor

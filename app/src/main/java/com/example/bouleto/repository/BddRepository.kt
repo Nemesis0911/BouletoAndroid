@@ -1,15 +1,11 @@
 package com.example.bouleto.repository
 
 import android.content.Context
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
 import androidx.room.Room
 import com.example.bouleto.database.AppDatabase
-import com.example.bouleto.models.Convertisseur
+import com.example.bouleto.models.ConvertisseurMembre
+
 import com.example.bouleto.models.Groupe
-import com.example.bouleto.models.Membre
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
@@ -17,13 +13,14 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 class BddRepository(context: Context) {
     val database = Room.databaseBuilder(context, AppDatabase::class.java, "database-name")
         .addTypeConverter(
-            Convertisseur(
+            ConvertisseurMembre(
                 Moshi.Builder()
                     .add(KotlinJsonAdapterFactory())
                     .build()
             )
         )
         .build()
+
 
     val dao = database.groupeDao()
 
@@ -38,8 +35,7 @@ class BddRepository(context: Context) {
     suspend fun deleteAll() = dao.deleteAll()
 
     suspend fun updateGroupe(groupe: Groupe) {
-
-            dao.updateGroupe(groupe)
+        dao.updateGroupe(groupe)
     }
 
 }

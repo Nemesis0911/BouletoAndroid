@@ -6,6 +6,7 @@ import com.example.bouleto.vues.MenuGroupes
 
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -31,7 +32,10 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -39,6 +43,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -46,9 +51,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -251,17 +258,6 @@ fun Main() {
     var afficherDialogPoint = remember { mutableStateOf(false) }
     val viewModel = viewModel<MainViewmodel>()
 
-
-
-    // Liste des membres avec état modifiable
-    var listMembres = remember {
-        mutableStateOf(listOf(
-            Membre(prenom="Alice", nom= "Dupont", points = 5,),
-            Membre(prenom ="Bob", nom="Martin", points = 3, )
-            // etc...
-        ))
-    }
-
     val groupeSelectionne = viewModel.groupeSelectionne.collectAsState()
 
     //viewModel.clearDatabase()
@@ -327,10 +323,12 @@ fun Main() {
                         )
 
                         if (afficherDialogPoint.value) {
+//                            var gs = viewModel.groupeSelectionne.collectAsState()
+//                            Log.d("test", "${gs.value.membres}")
                             PopUpAjoutPointBoulet(
                                 onDismiss = { afficherDialogPoint.value = false },
                                 onConfirm = { membreSelectionne, pointsAjoutes, description ->
-                                    viewModel.updateGroupe(groupeSelectionne.value, membreSelectionne, pointsAjoutes)
+                                    viewModel.updateGroupe(groupeSelectionne.value, membreSelectionne, pointsAjoutes, 43.623626, 2.267868)
                                     afficherDialogPoint.value = false
                                     viewModel.getAll()
                                     scope.launch {
@@ -338,7 +336,7 @@ fun Main() {
                                         viewModel.getAll()
                                     }
                                 },
-                                viewmodel = viewModel()
+                                groupeSelectionnee = viewModel.groupeSelectionne.collectAsState().value
                             )
                         }
                     }
@@ -373,6 +371,48 @@ fun Main() {
                         }
                     }
                 )
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TestDropdown() {
+    var expanded by remember { mutableStateOf(false) }
+    var selected by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it }
+        ) {
+            OutlinedTextField(
+                value = selected,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                listOf("Option 1", "Option 2", "Option 3").forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            selected = option
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }

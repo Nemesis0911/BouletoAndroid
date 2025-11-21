@@ -48,7 +48,7 @@ fun Parametres(viewModel: MainViewmodel) {
 
                     groupe.membres.forEach { membre ->
                         Text(
-                            text = "${membre.prenom} ${membre.nom} (${membre.points} pts)",
+                            text = "${membre.prenom} ${membre.nom} (${membre.scoreTotal} pts)",
                             modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                         )
                     }

@@ -21,7 +21,7 @@ data class Groupe(
 )
 
 @ProvidedTypeConverter
-class Convertisseur(moshi: Moshi) {
+class ConvertisseurMembre(moshi: Moshi) {
     private val membreAdapter = moshi.adapter<List<Membre>>(
         Types.newParameterizedType(List::class.java, Membre::class.java)
     )
