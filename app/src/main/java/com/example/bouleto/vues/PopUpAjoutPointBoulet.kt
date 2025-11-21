@@ -102,7 +102,9 @@ fun PopUpAjoutPointBoulet(
 
                 // ✅ BOX AVEC DROPDOWN CLASSIQUE
                 Box(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = !expanded }  // ✅ Toute la box est cliquable
                 ) {
                     OutlinedTextField(
                         value = membreSelectionne?.let { "${it.prenom} ${it.nom}" } ?: "",
@@ -110,23 +112,25 @@ fun PopUpAjoutPointBoulet(
                         readOnly = true,
                         placeholder = { Text("Sélectionner un membre") },
                         trailingIcon = {
-                            IconButton(onClick = { expanded = !expanded }) {
-                                Icon(
-                                    imageVector = if (expanded)
-                                        Icons.Default.KeyboardArrowUp
-                                    else
-                                        Icons.Default.KeyboardArrowDown,
-                                    contentDescription = null
-                                )
-                            }
+                            Icon(
+                                imageVector = if (expanded)
+                                    Icons.Default.KeyboardArrowUp
+                                else
+                                    Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                tint = Color.DarkGray  // ✅ Flèche gris foncé
+                            )
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { expanded = true },
+                        modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
+                            //disabledBorderColor = Color.DarkGray,  // ✅ Bordure gris foncé
+                            disabledTextColor = Color.Black,  // ✅ Texte noir
+                            disabledPlaceholderColor = Color.Gray,  // ✅ Placeholder gris
+                            disabledTrailingIconColor = Color.DarkGray,  // ✅ Icône gris foncé
                             focusedBorderColor = Color(0xFFFFB300),
                             unfocusedBorderColor = Color.LightGray
-                        )
+                        ),
+                        enabled = false
                     )
 
                     // ✅ DROPDOWN MENU AVEC LARGEUR LIMITÉE
@@ -134,8 +138,8 @@ fun PopUpAjoutPointBoulet(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
                         modifier = Modifier
-                            .fillMaxWidth(0.85f)
-                            .heightIn(max = 200.dp)
+                            .fillMaxWidth(0.72f)
+                            .heightIn(max = 200.dp),
                     ) {
                         if (membres.isEmpty()) {
                             DropdownMenuItem(

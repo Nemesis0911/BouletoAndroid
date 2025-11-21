@@ -284,7 +284,6 @@ fun FormulaireGroupe(
                     onClick = {
                         if (nomGroupe.isNotBlank() && membres.isNotEmpty()) {
                             onValider(nomGroupe, membres)
-                            //viewModel.addGroupe(groupe = Groupe(nom = nomGroupe, membres = membres, couleur = Color.Red))
                             onDismiss()
                         }
                     },
