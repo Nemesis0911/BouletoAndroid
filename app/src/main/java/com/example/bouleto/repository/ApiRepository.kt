@@ -14,6 +14,7 @@ import io.ktor.client.plugins.logging.SIMPLE
 import io.ktor.client.request.request
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
+import java.net.URLEncoder
 
 class ApiRepository {
     val client = HttpClient(CIO) {
@@ -35,8 +36,15 @@ class ApiRepository {
     }
 
     suspend fun rechercheAdresse(adress: String) : ApiResponse {
-        val url = "https://data.geopf.fr/geocodage/completion/?text=${adress}&type=StreetAddress&maximumResponses=5"
-        return client.request(url).body()
+        try {
+            val encoded = URLEncoder.encode(adress, "UTF-8").replace("+", "%20")
+            val url = "https://data.geopf.fr/geocodage/completion/?text=${encoded}&type=StreetAddress&maximumResponses=5"
+            val response = client.request(url)
+            return client.request(url).body()
+        } catch (e: Exception) {
+            Log.e("ApiRepository", "Error fetching address: ${e.message}")
+            return ApiResponse()
+        }
     }
 
 }

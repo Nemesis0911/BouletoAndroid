@@ -261,54 +261,57 @@ fun PopUpAjoutPointBoulet(
                         )
 
                         // ✅ DROPDOWN QUI S'OUVRE VERS LE BAS
-                        DropdownMenu(
-                            expanded = showSuggestions && resultatsApi.results.isNotEmpty(),
-                            onDismissRequest = { showSuggestions = false },
-                            properties = PopupProperties(
-                                focusable = false,  // ✅ Garde le focus sur le TextField
-                                dismissOnBackPress = true,
-                                dismissOnClickOutside = true
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth(0.72f)
-                                .heightIn(max = 250.dp)
-                                .background(Color.White)
-                                .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
-                        ) {
-                            resultatsApi.results.forEach { adresse ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 4.dp)
-                                        ) {
-                                            Text(
-                                                text = adresse?.fulltext ?: "",
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                color = Color.Black
-                                            )
-                                            Text(
-                                                text = "${adresse.classification} ${adresse.city}",
-                                                fontSize = 12.sp,
-                                                color = Color.Gray
-                                            )
-                                        }
-                                    },
-                                    onClick = {
-                                        adresseRecherche = adresse?.fulltext ?: ""
-                                        adresseSelectionnee = adresse
-                                        showSuggestions = false
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                        if (resultatsApi.results.isNotEmpty()) {
 
-                                if (adresse != resultatsApi.results.last()) {
-                                    Divider(
-                                        color = Color.White,
-                                        thickness = 0.5.dp
+                            DropdownMenu(
+                                expanded = showSuggestions,
+                                onDismissRequest = { showSuggestions = false },
+                                properties = PopupProperties(
+                                    focusable = false,  // ✅ Garde le focus sur le TextField
+                                    dismissOnBackPress = true,
+                                    dismissOnClickOutside = true
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth(0.72f)
+                                    .heightIn(max = 250.dp)
+                                    .background(Color.White)
+                                    .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                            ) {
+                                resultatsApi.results.forEach { adresse ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 4.dp)
+                                            ) {
+                                                Text(
+                                                    text = adresse?.fulltext ?: "",
+                                                    fontSize = 14.sp,
+                                                    fontWeight = FontWeight.Medium,
+                                                    color = Color.Black
+                                                )
+                                                Text(
+                                                    text = "${adresse.city}",
+                                                    fontSize = 12.sp,
+                                                    color = Color.Gray
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            adresseRecherche = adresse?.fulltext ?: ""
+                                            adresseSelectionnee = adresse
+                                            showSuggestions = false
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
                                     )
+
+                                    if (adresse != resultatsApi.results.last()) {
+                                        Divider(
+                                            color = Color.White,
+                                            thickness = 0.5.dp
+                                        )
+                                    }
                                 }
                             }
                         }

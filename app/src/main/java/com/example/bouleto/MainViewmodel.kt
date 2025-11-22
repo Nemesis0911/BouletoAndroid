@@ -97,44 +97,12 @@ class MainViewmodel(application: Application): AndroidViewModel(application) {
             resultatApi.value = apiRepository.rechercheAdresse(adress)
             Log.d(
                 "rechercheAdresse",
-                "Adresse trouvée: ${apiRepository.rechercheAdresse(adress).results.first()}"
+                "Adresse trouvée: ${apiRepository.rechercheAdresse(adress).results.firstOrNull()}"
             )
         }
     }
 
     val resultatApi = MutableStateFlow<ApiResponse>(ApiResponse(results = emptyList(), status = ""))
-
-
-
-   // private val _resultatApi = MutableStateFlow(ApiResponse())
-    //val resultatApi: StateFlow<ApiResponse> = _resultatApi
-
-//    private val client = HttpClient(Android) {
-//        install(ContentNegotiation) {
-//            json(Json {
-//                ignoreUnknownKeys = true
-//                isLenient = true
-//            })
-//        }
-//    }
-
-//    fun rechercheAdresse(query: String) {
-//        viewModelScope.launch {
-//            try {
-//                val response: ApiResponse = client.get("https://api-adresse.data.gouv.fr/search/") {
-//                    parameter("q", query)
-//                    parameter("limit", 5)
-//                }.body()
-//
-//                resultatApi.value = response
-//                Log.d("API", "✅ ${response.results.size} résultats trouvés")
-//
-//            } catch (e: Exception) {
-//                Log.e("API", "❌ Erreur: ${e.message}")
-//                resultatApi.value = ApiResponse(emptyList(), "error")
-//            }
-//        }
-//    }
 
     override fun onCleared() {
         super.onCleared()
