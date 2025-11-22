@@ -1,6 +1,8 @@
 package com.example.bouleto.vues
 
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.PopupProperties
 import com.example.bouleto.MainViewmodel
 import com.example.bouleto.models.ApiResponse
 import com.example.bouleto.models.Groupe
@@ -153,7 +156,9 @@ fun PopUpAjoutPointBoulet(
                         onDismissRequest = { expanded = false },
                         modifier = Modifier
                             .fillMaxWidth(0.72f)
-                            .heightIn(max = 200.dp),
+                            .heightIn(max = 200.dp)
+                            .background(Color.White)
+                            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
                     ) {
                         if (membres.isEmpty()) {
                             DropdownMenuItem(
@@ -196,120 +201,144 @@ fun PopUpAjoutPointBoulet(
                     )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+
                 //Champ adresse
-                Text(
-                    text = "Adresse de l'action (optionnel)",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black,
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Adresse de l'action (optionnel)",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Black,
+                    )
 
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                    // ✅ Box avec position relative pour le dropdown
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    ) {
+                        OutlinedTextField(
+                            value = adresseRecherche,
+                            onValueChange = { nouvelleValeur ->
+                                adresseRecherche = nouvelleValeur
+                                adresseSelectionnee = null
 
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = adresseRecherche,
-                        onValueChange = { nouvelleValeur ->
-                            adresseRecherche = nouvelleValeur
-                            adresseSelectionnee = null
-
-                            if (nouvelleValeur.length >= 3) {
-                                showSuggestions = true
-                                viewModel.rechercheAdresse(nouvelleValeur)
-                            } else {
-                                showSuggestions = false
-                            }
-                        },
-                        placeholder = {
-                            Text("Commencez à taper une adresse...", color = Color.Gray)
-                        },
-                        trailingIcon = {
-                            if (adresseRecherche.isNotEmpty()) {
-                                IconButton(onClick = {
-                                    adresseRecherche = ""
-                                    adresseSelectionnee = null
+                                if (nouvelleValeur.length >= 3) {
+                                    showSuggestions = true
+                                    viewModel.rechercheAdresse(nouvelleValeur)
+                                } else {
                                     showSuggestions = false
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Clear,
-                                        contentDescription = "Effacer",
-                                        tint = Color.Black
+                                }
+                            },
+                            placeholder = {
+                                Text("Commencez à taper une adresse...", color = Color.Gray)
+                            },
+                            trailingIcon = {
+                                if (adresseRecherche.isNotEmpty()) {
+                                    IconButton(onClick = {
+                                        adresseRecherche = ""
+                                        adresseSelectionnee = null
+                                        showSuggestions = false
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "Effacer",
+                                            tint = Color.Black
+                                        )
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFFFFB300),
+                                unfocusedBorderColor = Color.LightGray,
+                                focusedTextColor = Color.Black,
+                                unfocusedTextColor = Color.Black
+                            ),
+                            singleLine = true
+                        )
+
+                        // ✅ DROPDOWN QUI S'OUVRE VERS LE BAS
+                        DropdownMenu(
+                            expanded = showSuggestions && resultatsApi.results.isNotEmpty(),
+                            onDismissRequest = { showSuggestions = false },
+                            properties = PopupProperties(
+                                focusable = false,  // ✅ Garde le focus sur le TextField
+                                dismissOnBackPress = true,
+                                dismissOnClickOutside = true
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth(0.72f)
+                                .heightIn(max = 250.dp)
+                                .background(Color.White)
+                                .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                        ) {
+                            resultatsApi.results.forEach { adresse ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp)
+                                        ) {
+                                            Text(
+                                                text = adresse?.fulltext ?: "",
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = Color.Black
+                                            )
+                                            Text(
+                                                text = "${adresse.classification} ${adresse.city}",
+                                                fontSize = 12.sp,
+                                                color = Color.Gray
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        adresseRecherche = adresse?.fulltext ?: ""
+                                        adresseSelectionnee = adresse
+                                        showSuggestions = false
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+
+                                if (adresse != resultatsApi.results.last()) {
+                                    Divider(
+                                        color = Color.White,
+                                        thickness = 0.5.dp
                                     )
                                 }
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFFFB300),
-                            unfocusedBorderColor = Color.LightGray,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
-                        ),
-                        singleLine = true
-                    )
-
-                    // ✅ DROPDOWN DES SUGGESTIONS
-                    DropdownMenu(
-                        expanded = showSuggestions && resultatsApi.results.isNotEmpty(),
-                        onDismissRequest = { showSuggestions = false },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 250.dp)
-                    ) {
-                        resultatsApi.results.forEach { adresse ->
-                            DropdownMenuItem(
-                                text = {
-                                    Column {
-                                        Text(
-                                            text = adresse?.fulltext ?: "",
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            color = Color.White
-                                        )
-                                        Text(
-                                            text = "${adresse.classification} ${adresse.city}",
-                                            fontSize = 12.sp,
-                                            color = Color.Gray
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    adresseRecherche = adresse?.fulltext ?: ""
-                                    adresseSelectionnee = adresse
-                                    showSuggestions = false
-                                }
-                            )
-                            if (adresse != resultatsApi.results.last()) {
-                                Divider(color = Color.DarkGray)
-                            }
                         }
                     }
                 }
+
 
                 // ✅ AFFICHAGE ADRESSE SÉLECTIONNÉE
-                if (adresseSelectionnee != null) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFF2D2D2D)
-                        )
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = "Adresse sélectionnée :",
-                                fontSize = 12.sp,
-                                color = Color.Gray
-                            )
-                            Text(
-                                text = adresseSelectionnee!!.fulltext ?: "",
-                                fontSize = 14.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
+//                if (adresseSelectionnee != null) {
+//                    Card(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        colors = CardDefaults.cardColors(
+//                            containerColor = Color(0xFF2D2D2D)
+//                        )
+//                    ) {
+//                        Column(modifier = Modifier.padding(12.dp)) {
+//                            Text(
+//                                text = "Adresse sélectionnée :",
+//                                fontSize = 12.sp,
+//                                color = Color.Gray
+//                            )
+//                            Text(
+//                                text = adresseSelectionnee!!.fulltext ?: "",
+//                                fontSize = 14.sp,
+//                                color = Color.White,
+//                                fontWeight = FontWeight.Bold
+//                            )
+//                        }
+//                    }
+//                }
                 Spacer(modifier = Modifier.height(8.dp))
                 // Description
                 Text(
