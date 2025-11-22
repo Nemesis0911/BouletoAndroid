@@ -1,24 +1,25 @@
 package com.example.bouleto.models
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ApiResponse(
-    val results: List<Result>,
-    val status: String
+    @SerialName("results") val results: List<Result> = emptyList(),
+    @SerialName("status") val status: String? = null
 )
 
 @Serializable
 data class Result(
-    val city: String,
-    val classification: Int,
-    val country: String,
-    val fulltext: String,
-    val kind: String,
-    val metropole: Boolean,
-    val oldcity: String,
-    val street: String,
-    val x: Double,
-    val y: Double,
-    val zipcode: String
+    @SerialName("city") val city: String? = null,
+    @SerialName("classification") val classification: Int? = null,
+    @SerialName("country") val country: String? = null,
+    @SerialName("fulltext") val fulltext: String? = null,
+    @SerialName("kind") val kind: String? = null,
+    @SerialName("metropole") val metropole: Boolean? = null,
+    @SerialName("oldcity") val oldcity: String? = null,
+    @SerialName("street") val street: String? = null,
+    @SerialName("x") val x: Double? = null,
+    @SerialName("y") val y: Double? = null,
+    @SerialName("zipcode") val zipcode: String? = null
 )

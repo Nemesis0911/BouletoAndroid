@@ -59,13 +59,16 @@ android {
         implementation(libs.androidx.lifecycle.viewmodel.navigation3)
         implementation(libs.kotlinx.serialization.core)
 
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
         implementation("org.osmdroid:osmdroid-android:6.1.18")
 
         implementation(libs.androidx.room.runtime)
         implementation(libs.androidx.room.ktx)
         ksp(libs.androidx.room.compiler)
+        implementation("io.ktor:ktor-client-android:2.3.7")
+        implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+        implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
 
         implementation("com.squareup.moshi:moshi:1.15.0")
         implementation("com.squareup.moshi:moshi-kotlin:1.15.0")

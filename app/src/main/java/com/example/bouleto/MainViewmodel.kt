@@ -11,11 +11,19 @@ import com.example.bouleto.models.Membre
 import com.example.bouleto.models.Point
 import com.example.bouleto.repository.ApiRepository
 import com.example.bouleto.repository.BddRepository
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
-class MainViewmodel(application: Application): AndroidViewModel(application){
+class MainViewmodel(application: Application): AndroidViewModel(application) {
 
     //récupération du répository
     val bddRepository = BddRepository(application)
@@ -26,6 +34,7 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
             groupes.value = bddRepository.getAll()
         }
     }
+
     fun addGroupe(groupe: Groupe) {
         viewModelScope.launch {
             val membresAvecId = groupe.membres.mapIndexed { index, membre ->
@@ -40,21 +49,21 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
     }
 
 
-    fun deleteGroupe(id : Int) {
+    fun deleteGroupe(id: Int) {
         viewModelScope.launch {
             bddRepository.deleteGroupe(id)
             getAll()
         }
     }
 
-    fun clearDatabase(){
+    fun clearDatabase() {
         viewModelScope.launch {
             bddRepository.deleteAll()
             getAll()
         }
     }
 
-    fun setGroupeSelectionne(groupe : Groupe){
+    fun setGroupeSelectionne(groupe: Groupe) {
         groupeSelectionne.value = groupe
     }
 
@@ -73,17 +82,65 @@ class MainViewmodel(application: Application): AndroidViewModel(application){
     //liste de nos groupes
     val groupes = MutableStateFlow<List<Groupe>>(emptyList())
 
-    val groupeSelectionne = MutableStateFlow<Groupe>(Groupe(id = -1, nom = "test", couleur = androidx.compose.ui.graphics.Color.Blue))
+    val groupeSelectionne = MutableStateFlow<Groupe>(
+        Groupe(
+            id = -1,
+            nom = "test",
+            couleur = androidx.compose.ui.graphics.Color.Blue
+        )
+    )
 
     // APIII
 
     fun rechercheAdresse(adress: String) {
         viewModelScope.launch {
-            apiRepository.rechercheAdresse(adress)
-            Log.d("rechercheAdresse", "Adresse trouvée: ${apiRepository.rechercheAdresse(adress).results.first()}")
+            resultatApi.value = apiRepository.rechercheAdresse(adress)
+            Log.d(
+                "rechercheAdresse",
+                "Adresse trouvée: ${apiRepository.rechercheAdresse(adress).results.first()}"
+            )
         }
     }
 
     val resultatApi = MutableStateFlow<ApiResponse>(ApiResponse(results = emptyList(), status = ""))
+
+
+
+   // private val _resultatApi = MutableStateFlow(ApiResponse())
+    //val resultatApi: StateFlow<ApiResponse> = _resultatApi
+
+//    private val client = HttpClient(Android) {
+//        install(ContentNegotiation) {
+//            json(Json {
+//                ignoreUnknownKeys = true
+//                isLenient = true
+//            })
+//        }
+//    }
+
+//    fun rechercheAdresse(query: String) {
+//        viewModelScope.launch {
+//            try {
+//                val response: ApiResponse = client.get("https://api-adresse.data.gouv.fr/search/") {
+//                    parameter("q", query)
+//                    parameter("limit", 5)
+//                }.body()
+//
+//                resultatApi.value = response
+//                Log.d("API", "✅ ${response.results.size} résultats trouvés")
+//
+//            } catch (e: Exception) {
+//                Log.e("API", "❌ Erreur: ${e.message}")
+//                resultatApi.value = ApiResponse(emptyList(), "error")
+//            }
+//        }
+//    }
+
+    override fun onCleared() {
+        super.onCleared()
+    }
 }
+
+
+
 

@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -17,19 +18,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.bouleto.MainViewmodel
+import com.example.bouleto.models.ApiResponse
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
+import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.bouleto.models.Result
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PopUpAjoutPointBoulet(
     onDismiss: () -> Unit,
-    onConfirm: (Membre, Int, String) -> Unit,
-    groupeSelectionnee: Groupe
+    onConfirm: (Membre, Int, String? ,Double ,Double) -> Unit,
+    groupeSelectionnee: Groupe,
+    viewModel: MainViewmodel
 ) {
     var membreSelectionne by remember { mutableStateOf<Membre?>(null) }
     var nombrePoints by remember { mutableStateOf("2") }
@@ -37,6 +44,13 @@ fun PopUpAjoutPointBoulet(
     var expanded by remember { mutableStateOf(false) }
 
     val membres = groupeSelectionnee.membres
+
+    var adresseRecherche by remember { mutableStateOf("") }
+    var adresseSelectionnee by remember { mutableStateOf<Result?>(null) }
+    var showSuggestions by remember { mutableStateOf(false) }
+
+    // ✅ Observer le StateFlow
+    val resultatsApi by viewModel.resultatApi.collectAsState()
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -181,9 +195,122 @@ fun PopUpAjoutPointBoulet(
                         unfocusedBorderColor = Color.LightGray
                     )
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                //Champ adresse
+                Text(
+                    text = "Adresse de l'action (optionnel)",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black,
 
-                Spacer(modifier = Modifier.height(16.dp))
 
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = adresseRecherche,
+                        onValueChange = { nouvelleValeur ->
+                            adresseRecherche = nouvelleValeur
+                            adresseSelectionnee = null
+
+                            if (nouvelleValeur.length >= 3) {
+                                showSuggestions = true
+                                viewModel.rechercheAdresse(nouvelleValeur)
+                            } else {
+                                showSuggestions = false
+                            }
+                        },
+                        placeholder = {
+                            Text("Commencez à taper une adresse...", color = Color.Gray)
+                        },
+                        trailingIcon = {
+                            if (adresseRecherche.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    adresseRecherche = ""
+                                    adresseSelectionnee = null
+                                    showSuggestions = false
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = "Effacer",
+                                        tint = Color.Black
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFFB300),
+                            unfocusedBorderColor = Color.LightGray,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black
+                        ),
+                        singleLine = true
+                    )
+
+                    // ✅ DROPDOWN DES SUGGESTIONS
+                    DropdownMenu(
+                        expanded = showSuggestions && resultatsApi.results.isNotEmpty(),
+                        onDismissRequest = { showSuggestions = false },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 250.dp)
+                    ) {
+                        resultatsApi.results.forEach { adresse ->
+                            DropdownMenuItem(
+                                text = {
+                                    Column {
+                                        Text(
+                                            text = adresse?.fulltext ?: "",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color.White
+                                        )
+                                        Text(
+                                            text = "${adresse.classification} ${adresse.city}",
+                                            fontSize = 12.sp,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    adresseRecherche = adresse?.fulltext ?: ""
+                                    adresseSelectionnee = adresse
+                                    showSuggestions = false
+                                }
+                            )
+                            if (adresse != resultatsApi.results.last()) {
+                                Divider(color = Color.DarkGray)
+                            }
+                        }
+                    }
+                }
+
+                // ✅ AFFICHAGE ADRESSE SÉLECTIONNÉE
+                if (adresseSelectionnee != null) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF2D2D2D)
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = "Adresse sélectionnée :",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = adresseSelectionnee!!.fulltext ?: "",
+                                fontSize = 14.sp,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
                 // Description
                 Text(
                     text = "Description de l'action (optionnel)",
@@ -198,7 +325,7 @@ fun PopUpAjoutPointBoulet(
                     placeholder = { Text("Ex: A oublié ses clés pour la 3ème fois...") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(100.dp),
+                        .height(80.dp),
                     maxLines = 3,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFFFFB300),
@@ -223,7 +350,9 @@ fun PopUpAjoutPointBoulet(
                                 onConfirm(
                                     membre,
                                     nombrePoints.toIntOrNull() ?: 0,
-                                    description
+                                    description,
+                                    adresseSelectionnee?.x ?: 0.0,
+                                    adresseSelectionnee?.y ?: 0.0
                                 )
                             }
                         },
@@ -238,4 +367,9 @@ fun PopUpAjoutPointBoulet(
             }
         }
     }
+
+
 }
+
+
+

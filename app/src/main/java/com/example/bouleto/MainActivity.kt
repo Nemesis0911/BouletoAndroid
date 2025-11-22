@@ -42,6 +42,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -327,8 +328,8 @@ fun Main() {
 //                            Log.d("test", "${gs.value.membres}")
                             PopUpAjoutPointBoulet(
                                 onDismiss = { afficherDialogPoint.value = false },
-                                onConfirm = { membreSelectionne, pointsAjoutes, description ->
-                                    viewModel.updateGroupe(groupeSelectionne.value, membreSelectionne, pointsAjoutes, 43.623626, 2.267868)
+                                onConfirm = { membreSelectionne, pointsAjoutes, description, x, y ->
+                                    viewModel.updateGroupe(groupeSelectionne.value, membreSelectionne, pointsAjoutes, x, y)
                                     afficherDialogPoint.value = false
                                     viewModel.getAll()
                                     scope.launch {
@@ -336,6 +337,7 @@ fun Main() {
                                         viewModel.getAll()
                                     }
                                 },
+                                viewModel = viewModel,
                                 groupeSelectionnee = viewModel.groupeSelectionne.collectAsState().value
                             )
                         }
@@ -397,7 +399,7 @@ fun TestDropdown() {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor()
+                    .menuAnchor(MenuAnchorType.PrimaryEditable, enabled = true)
             )
 
             ExposedDropdownMenu(
