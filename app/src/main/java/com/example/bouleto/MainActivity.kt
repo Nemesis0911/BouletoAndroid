@@ -329,7 +329,7 @@ fun Main() {
                             PopUpAjoutPointBoulet(
                                 onDismiss = { afficherDialogPoint.value = false },
                                 onConfirm = { membreSelectionne, pointsAjoutes, description, x, y ->
-                                    viewModel.updateGroupe(groupeSelectionne.value, membreSelectionne, pointsAjoutes, x, y)
+                                    viewModel.updateGroupe(groupeSelectionne.value, membreSelectionne, pointsAjoutes, y, x)
                                     afficherDialogPoint.value = false
                                     viewModel.getAll()
                                     scope.launch {
@@ -360,7 +360,10 @@ fun Main() {
                             }
 
                             is DestinationCarte -> NavEntry(key) {
-                                Carte()
+                                Carte(
+                                    membres = groupeSelectionne.value.membres,
+                                    viewModel = viewModel
+                                )
                             }
 
                             is DestinationParametres -> NavEntry(key) {
