@@ -5,14 +5,11 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
@@ -30,32 +27,31 @@ import androidx.core.content.ContextCompat
 import com.example.bouleto.MainViewmodel
 import com.example.bouleto.models.Membre
 import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.text.font.FontWeight
+import com.example.bouleto.models.Point
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.MapTileIndex
 
 
-// 🎨 Style de carte sombre
-val DARK_MAP_TILE_SOURCE = XYTileSource(
-    "CartoDarkMatter",
-    0, 19, 256, ".png",
-    arrayOf(
-        "https://a.basemaps.cartocdn.com/dark_all/",
-        "https://b.basemaps.cartocdn.com/dark_all/",
-        "https://c.basemaps.cartocdn.com/dark_all/",
-        "https://d.basemaps.cartocdn.com/dark_all/"
-    ),
-    "© OpenStreetMap contributors © CARTO"
-)
+//// 🎨 Style de carte sombre
+//val DARK_MAP_TILE_SOURCE = XYTileSource(
+//    "CartoDarkMatter",
+//    0, 19, 256, ".png",
+//    arrayOf(
+//        "https://a.basemaps.cartocdn.com/dark_all/",
+//        "https://b.basemaps.cartocdn.com/dark_all/",
+//        "https://c.basemaps.cartocdn.com/dark_all/",
+//        "https://d.basemaps.cartocdn.com/dark_all/"
+//    ),
+//    "© OpenStreetMap contributors © CARTO"
+//)
 
 // 🔧 Fonction pour redimensionner les icônes
 fun resizeDrawable(drawable: Drawable, width: Int, height: Int): BitmapDrawable {
@@ -191,7 +187,7 @@ fun Carte(
 
                         val marker = Marker(map).apply {
                             position = GeoPoint(lat, lon)
-                            title = membre.nom.uppercase() + " "+ membre.prenom.uppercase()
+                            title = membre.pseudo.uppercase()
                             snippet = "${point.score}" + " points"
                             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
 
@@ -262,10 +258,8 @@ fun Carte(
 
 @Composable
 fun BulleInfoMarker(
-    nom: String,
-    prenom: String,
-    adresse: String,
-    points: Int,
+    membre: Membre,
+    point : Point,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -275,7 +269,7 @@ fun BulleInfoMarker(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(2.dp, Color(0xFFFFB300))
+        border = BorderStroke(2.dp, Color(membre.couleur))
     ) {
         Column(
             modifier = Modifier
@@ -283,7 +277,7 @@ fun BulleInfoMarker(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 👤 NOM ET PRÉNOM
+            // 👤 Pseudo
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -291,11 +285,11 @@ fun BulleInfoMarker(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
-                    tint = Color(0xFFFFB300),
+                    tint = Color(membre.couleur),
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = "$prenom $nom",
+                    text = "${membre.pseudo} ",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF333333)
@@ -314,7 +308,7 @@ fun BulleInfoMarker(
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
-                    text = adresse,
+                    text = "" + point.latidute + point.longitude,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF666666)
                 )
@@ -327,7 +321,7 @@ fun BulleInfoMarker(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = Color(0xFFFFF8E1),
+                        color = Color(membre.couleur).copy(alpha = 0.1f),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(8.dp)
@@ -335,14 +329,14 @@ fun BulleInfoMarker(
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = Color(0xFFFFB300),
+                    tint = Color(membre.couleur),
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
-                    text = "$points points",
+                    text = "" + point.score + " points",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFFFB300)
+                    color = Color(membre.couleur)
                 )
             }
         }

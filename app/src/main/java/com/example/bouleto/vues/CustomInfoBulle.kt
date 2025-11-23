@@ -35,10 +35,9 @@ class CustomInfoBulle(
             setContent {
                 MaterialTheme {
                     BulleInfoMarker(
-                        nom = membre.nom,
-                        prenom = membre.prenom,
-                        adresse = point.latidute.toString(),
-                        points = point.score
+                        membre = membre,
+                        point = point,
+
                     )
                 }
             }

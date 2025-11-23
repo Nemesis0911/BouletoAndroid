@@ -36,16 +36,22 @@ fun CartePerso(
     position: Int
 ) {
     // 1. Calcul des initiales
-    val initiales = remember(membre.prenom, membre.nom) {
-        val p = membre.prenom.firstOrNull()?.toString() ?: ""
-        val n = membre.nom.firstOrNull()?.toString() ?: ""
-        (p + n).uppercase()
+    val initiales = remember(membre.pseudo) {
+        val mots = membre.pseudo.trim().split(" ").filter { it.isNotEmpty() }
+
+        if (mots.size >= 2) {
+            "${mots[0].first().uppercaseChar()}${mots[1].first().uppercaseChar()}"
+        } else if (mots.isNotEmpty() && mots[0].length >= 2) {
+            mots[0].take(2).uppercase()
+        } else {
+            mots.firstOrNull()?.first()?.uppercase()?.repeat(2) ?: "??"
+        }
     }
 
     // 2. Génération de couleur aléatoire stable (basée sur le hash du nom)
-    val couleurAvatar = remember(membre.id) {
-        genererCouleurAleatoire(membre.prenom + membre.nom)
-    }
+//    val couleurAvatar = remember(membre.id) {
+//        genererCouleurAleatoire(membre.pseudo + membre.nom)
+//    }
 
     Row(
         modifier = Modifier
@@ -88,7 +94,7 @@ fun CartePerso(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(couleurAvatar),
+                    .background(Color(membre.couleur)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -104,7 +110,7 @@ fun CartePerso(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Text(
-                    text = "${membre.prenom} ${membre.nom}",
+                    text = "${membre.pseudo} ",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color(0xFF1A1A1A)

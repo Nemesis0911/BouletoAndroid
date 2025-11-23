@@ -14,12 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.bouleto.MainViewmodel
-import com.example.bouleto.models.Groupe
-import com.example.bouleto.models.Membre
 
 @Composable
 fun Parametres(viewModel: MainViewmodel) {
@@ -48,7 +45,7 @@ fun Parametres(viewModel: MainViewmodel) {
 
                     groupe.membres.forEach { membre ->
                         Text(
-                            text = "${membre.prenom} ${membre.nom} (${membre.scoreTotal} pts)",
+                            text = "${membre.pseudo} (${membre.scoreTotal} pts)",
                             modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                         )
                     }

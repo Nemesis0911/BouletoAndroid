@@ -1,6 +1,5 @@
 package com.example.bouleto.vues
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,17 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.PopupProperties
 import com.example.bouleto.MainViewmodel
-import com.example.bouleto.models.ApiResponse
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
-import kotlinx.coroutines.flow.MutableStateFlow
 import com.example.bouleto.models.Result
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,7 +122,7 @@ fun PopUpAjoutPointBoulet(
                         .clickable { expanded = !expanded }  // ✅ Toute la box est cliquable
                 ) {
                     OutlinedTextField(
-                        value = membreSelectionne?.let { "${it.prenom} ${it.nom}" } ?: "",
+                        value = membreSelectionne?.let { "${it.pseudo}" } ?: "",
                         onValueChange = {},
                         readOnly = true,
                         placeholder = { Text("Sélectionner un membre") },
@@ -171,7 +167,7 @@ fun PopUpAjoutPointBoulet(
                         } else {
                             membres.forEach { membre ->
                                 DropdownMenuItem(
-                                    text = { Text("${membre.prenom} ${membre.nom}") },
+                                    text = { Text("${membre.pseudo}") },
                                     onClick = {
                                         membreSelectionne = membre
                                         expanded = false

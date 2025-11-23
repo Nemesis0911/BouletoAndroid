@@ -1,38 +1,32 @@
 package com.example.bouleto.models
 
+import androidx.compose.ui.graphics.Color
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.ProvidedTypeConverter
-import androidx.room.TypeConverter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
+import com.squareup.moshi.Json
 
 
+@Entity
 data class Membre(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val prenom: String,
-    val nom: String,
-    var point: List<Point> = listOf(),
-){
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
 
+    @Json(name = "pseudo")
+    val pseudo: String = "",  // ✅ Valeur par défaut vide
+
+
+    // ✅ Stocke comme Long dans la base de données
+    @ColumnInfo(name = "couleur")
+    val couleur: Long = 0xFF101010,
+
+    var point: List<Point> = listOf(),
+) {
+    // 🎨 Propriété calculée pour Compose (ignorée par Moshi ET Room)
+    fun getCouleur(): Color = Color(couleur.toULong())
     val scoreTotal: Int
         get() = point.sumOf { it.score }
 }
 
 
-//@ProvidedTypeConverter
-//class ConvertisseurPoint(moshi: Moshi) {
-//    private val pointAdapter = moshi.adapter<List<Point>>(
-//        Types.newParameterizedType(List::class.java, Point::class.java)
-//    )
-//
-//    @TypeConverter
-//    fun stringToPoint(value: String): List<Point>? {
-//        return pointAdapter.fromJson(value)
-//    }
-//
-//    @TypeConverter
-//    fun pointToString(point: List<Point>): String {
-//        return pointAdapter.toJson(point)
-//    }
-//}
+
