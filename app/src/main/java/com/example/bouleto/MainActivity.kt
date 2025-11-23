@@ -1,62 +1,17 @@
 package com.example.bouleto
 
-import android.R.attr.id
-import com.example.bouleto.vues.Accueil
-import com.example.bouleto.vues.MenuGroupes
-
-
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,16 +25,12 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
-
-import com.example.bouleto.vues.Carte
-import com.example.bouleto.vues.Parametres
-import com.example.bouleto.vues.PopUpAjoutPointBoulet
+import com.example.bouleto.vues.*
 import kotlinx.coroutines.launch
 
 class DestinationAccueil
 class DestinationCarte
 class DestinationParametres
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,7 +41,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-//
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -106,13 +56,12 @@ fun GreetingPreview() {
     Main()
 }
 
-
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBarAccueil( backStack: SnapshotStateList<Any>,
-                   onMenuClick: () -> Unit ) {
+fun TopBarAccueil(
+    backStack: SnapshotStateList<Any>,
+    onMenuClick: () -> Unit
+) {
     TopAppBar(
         title = {
             Column(
@@ -121,13 +70,11 @@ fun TopBarAccueil( backStack: SnapshotStateList<Any>,
                     .padding(top = 10.dp)
                     .padding(end = 10.dp),
                 horizontalAlignment = Alignment.End
-
             ) {
                 Text(
                     text = "Bouleto",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
-
                 )
                 Spacer(modifier = Modifier.height(0.dp))
 
@@ -138,47 +85,40 @@ fun TopBarAccueil( backStack: SnapshotStateList<Any>,
                     is DestinationParametres -> "Paramètres"
                     else -> "Error"
                 }
-                Text(titleText,fontSize = 14.sp,
+                Text(
+                    titleText,
+                    fontSize = 14.sp,
                     color = Color.Gray
                 )
             }
         },
         navigationIcon = {
+            // ✅ TOUJOURS VISIBLE maintenant
             IconButton(onClick = onMenuClick) {
-
                 Icon(
                     imageVector = Icons.Filled.Menu,
                     contentDescription = "Menu"
                 )
             }
         },
-        actions ={
+        actions = {
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = Color(0xFFFFA726),
-                modifier = Modifier
-                    .size(50.dp)
-                //.padding(end = 10.dp)
-
-
+                modifier = Modifier.size(50.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Star,
                         contentDescription = "Trophée",
                         tint = Color.White,
-                        modifier = Modifier
-                            .size(26.dp)
-
+                        modifier = Modifier.size(26.dp)
                     )
                 }
             }
-
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White
@@ -250,6 +190,7 @@ fun BottomNavigationBar(backStack: SnapshotStateList<Any>) {
         )
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Main() {
@@ -260,13 +201,16 @@ fun Main() {
     val viewModel = viewModel<MainViewmodel>()
 
     val groupeSelectionne = viewModel.groupeSelectionne.collectAsState()
-
-    //viewModel.clearDatabase()
     viewModel.getAll()
     val groupes = viewModel.groupes.collectAsState().value
 
+    // 🎯 Déterminer si on est sur la page Carte
+    val current = backStack.lastOrNull()
+    val estSurCarte = current is DestinationCarte
+
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = !estSurCarte,  // ✅ Swipe désactivé sur la carte
         drawerContent = {
             MenuGroupes(
                 groupes = groupes,
@@ -279,12 +223,13 @@ fun Main() {
             )
         }
     ) {
-
         Scaffold(
             topBar = {
                 TopBarAccueil(
                     backStack = backStack,
-                    onMenuClick = { scope.launch { drawerState.open() } })
+                    onMenuClick = { scope.launch { drawerState.open() } }
+                    // ✅ Plus de paramètre showMenuButton
+                )
             },
             bottomBar = { BottomNavigationBar(backStack) }
         ) { paddingValues ->
@@ -293,7 +238,6 @@ fun Main() {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -322,65 +266,72 @@ fun Main() {
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
+                    }
 
-                        if (afficherDialogPoint.value) {
-//                            var gs = viewModel.groupeSelectionne.collectAsState()
-//                            Log.d("test", "${gs.value.membres}")
-                            PopUpAjoutPointBoulet(
-                                onDismiss = { afficherDialogPoint.value = false },
-                                onConfirm = { membreSelectionne, pointsAjoutes, description, x, y ->
-                                    viewModel.updateGroupe(groupeSelectionne.value, membreSelectionne, pointsAjoutes, y, x)
-                                    afficherDialogPoint.value = false
+                    if (afficherDialogPoint.value) {
+                        PopUpAjoutPointBoulet(
+                            onDismiss = { afficherDialogPoint.value = false },
+                            onConfirm = { membreSelectionne, pointsAjoutes, description, x, y ->
+                                viewModel.updateGroupe(
+                                    groupeSelectionne.value,
+                                    membreSelectionne,
+                                    pointsAjoutes,
+                                    y,
+                                    x
+                                )
+                                afficherDialogPoint.value = false
+                                viewModel.getAll()
+                                scope.launch {
+                                    kotlinx.coroutines.delay(200)
                                     viewModel.getAll()
-                                    scope.launch {
-                                        kotlinx.coroutines.delay(200)
-                                        viewModel.getAll()
-                                    }
-                                },
-                                viewModel = viewModel,
-                                groupeSelectionnee = viewModel.groupeSelectionne.collectAsState().value
-                            )
-                        }
+                                }
+                            },
+                            viewModel = viewModel,
+                            groupeSelectionnee = viewModel.groupeSelectionne.collectAsState().value
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-                NavDisplay(
-                    backStack = backStack,
-                    onBack = { backStack.removeLastOrNull() },
-                    entryProvider = { key ->
-                        when (key) {
-                            is DestinationAccueil -> NavEntry(key) {
-                                //Accueil()
-                                //Accueil(membres = membres.value)
-                                val groupeAJour = groupes.find { it.id == groupeSelectionne.value.id} ?: groupeSelectionne.value
-                                //val tousLesMembres = groupeSelectionne.value.membres
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    NavDisplay(
+                        backStack = backStack,
+                        onBack = { backStack.removeLastOrNull() },
+                        entryProvider = { key ->
+                            when (key) {
+                                is DestinationAccueil -> NavEntry(key) {
+                                    val groupeAJour =
+                                        groupes.find { it.id == groupeSelectionne.value.id }
+                                            ?: groupeSelectionne.value
+                                    Accueil(membres = groupeAJour.membres)
+                                }
 
-                                Accueil(membres = groupeAJour.membres)
-                            }
+                                is DestinationCarte -> NavEntry(key) {
+                                    Carte(
+                                        membres = groupeSelectionne.value.membres,
+                                        viewModel = viewModel
+                                    )
+                                }
 
-                            is DestinationCarte -> NavEntry(key) {
-                                Carte(
-                                    membres = groupeSelectionne.value.membres,
-                                    viewModel = viewModel
-                                )
-                            }
+                                is DestinationParametres -> NavEntry(key) {
+                                    Parametres(viewModel = viewModel)
+                                }
 
-                            is DestinationParametres -> NavEntry(key) {
-                                Parametres(viewModel = viewModel)
-                            }
-
-                            else -> {
-                                error("Unknown key $key")
+                                else -> {
+                                    error("Unknown key $key")
+                                }
                             }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
