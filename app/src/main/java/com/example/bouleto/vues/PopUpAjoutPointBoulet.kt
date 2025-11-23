@@ -1,11 +1,16 @@
 package com.example.bouleto.vues
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
@@ -18,14 +23,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.zIndex
 import com.example.bouleto.MainViewmodel
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
@@ -200,7 +217,7 @@ fun PopUpAjoutPointBoulet(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                //Champ adresse
+//Champ adresse
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "Adresse de l'action (optionnel)",
@@ -211,12 +228,17 @@ fun PopUpAjoutPointBoulet(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // ✅ Box avec position relative pour le dropdown
+                    // ✅ Variables pour tracker la position et taille du TextField
+                    var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
+                    var textFieldPosition by remember { mutableStateOf(Offset.Zero) }
+
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
+                        modifier = Modifier.fillMaxWidth()
                     ) {
+                        val focusRequester = remember { FocusRequester() }
+                        val focusManager = LocalFocusManager.current
+
+                        // TEXTFIELD
                         OutlinedTextField(
                             value = adresseRecherche,
                             onValueChange = { nouvelleValeur ->
@@ -248,73 +270,117 @@ fun PopUpAjoutPointBoulet(
                                     }
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(focusRequester)
+                                .onGloballyPositioned { coordinates ->
+                                    // ✅ Récupère la position et taille du TextField
+                                    textFieldSize = coordinates.size
+                                    textFieldPosition = coordinates.positionInWindow()
+                                },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color(0xFFFFB300),
                                 unfocusedBorderColor = Color.LightGray,
                                 focusedTextColor = Color.Black,
                                 unfocusedTextColor = Color.Black
                             ),
-                            singleLine = true
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                }
+                            )
                         )
 
-                        // ✅ DROPDOWN QUI S'OUVRE VERS LE BAS
-                        if (resultatsApi.results.isNotEmpty()) {
+                        // ✅ POPUP - Positionné AU DESSUS du TextField
+                        if (resultatsApi.results.isNotEmpty() && showSuggestions && textFieldSize != IntSize.Zero) {
+                            val dropdownHeight = minOf(200.dp, (resultatsApi.results.size * 60).dp)
+                            val dropdownHeightPx =
+                                with(LocalDensity.current) { dropdownHeight.toPx() }
+                            val extraPadding =
+                                with(LocalDensity.current) { 320.dp.toPx() } // ✅ Espace supplémentaire
 
-                            DropdownMenu(
-                                expanded = showSuggestions,
-                                onDismissRequest = { showSuggestions = false },
-                                properties = PopupProperties(
-                                    focusable = false,  // ✅ Garde le focus sur le TextField
-                                    dismissOnBackPress = true,
-                                    dismissOnClickOutside = true
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth(0.72f)
-                                    .heightIn(max = 250.dp)
-                                    .background(Color.White)
-                                    .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
+                            Popup(
+                                //alignment = Alignment.Center,
+                                offset = IntOffset(
+                                    x = textFieldPosition.x.toInt() - 150,
+                                    y = textFieldPosition.y.toInt() - dropdownHeightPx.toInt() - extraPadding.toInt()  // ✅ Ajoute un padding
+                                )
                             ) {
-                                resultatsApi.results.forEach { adresse ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Column(
+                                Surface(
+                                    modifier = Modifier
+                                        .width(with(LocalDensity.current) {
+                                            textFieldSize.width.toDp()
+                                        })
+                                        .height(dropdownHeight),
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color.White,
+                                    //shadowElevation = 30.dp,
+                                    border = BorderStroke(1.dp, Color.LightGray)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .verticalScroll(rememberScrollState())
+                                    ) {
+                                        resultatsApi.results.forEach { adresse ->
+                                            Surface(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(vertical = 4.dp)
+                                                    .clickable {
+                                                        adresseRecherche = adresse?.fulltext ?: ""
+                                                        adresseSelectionnee = adresse
+                                                        showSuggestions = false
+                                                        focusManager.clearFocus()
+                                                    },
+                                                color = Color.White
                                             ) {
-                                                Text(
-                                                    text = adresse?.fulltext ?: "",
-                                                    fontSize = 14.sp,
-                                                    fontWeight = FontWeight.Medium,
-                                                    color = Color.Black
-                                                )
-                                                Text(
-                                                    text = "${adresse.city}",
-                                                    fontSize = 12.sp,
-                                                    color = Color.Gray
+                                                Column(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(12.dp)
+                                                ) {
+                                                    Text(
+                                                        text = adresse?.fulltext ?: "",
+                                                        fontSize = 14.sp,
+                                                        fontWeight = FontWeight.Medium,
+                                                        color = Color.Black
+                                                    )
+                                                    Text(
+                                                        text = "${adresse.city}",
+                                                        fontSize = 12.sp,
+                                                        color = Color.Gray
+                                                    )
+                                                }
+                                            }
+
+                                            if (adresse != resultatsApi.results.last()) {
+                                                Divider(
+                                                    color = Color.LightGray,
+                                                    thickness = 0.5.dp
                                                 )
                                             }
-                                        },
-                                        onClick = {
-                                            adresseRecherche = adresse?.fulltext ?: ""
-                                            adresseSelectionnee = adresse
-                                            showSuggestions = false
-                                        },
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-
-                                    if (adresse != resultatsApi.results.last()) {
-                                        Divider(
-                                            color = Color.White,
-                                            thickness = 0.5.dp
-                                        )
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                }
+                    }}
+
+//Description
+//                Text(
+//                    text = "Description de l'action (optionnel)",
+//                    fontSize = 14.sp,
+//                    fontWeight = FontWeight.Medium,
+//                    color = Color.Black,
+//                )
+
+
+
+
 
 
                 // ✅ AFFICHAGE ADRESSE SÉLECTIONNÉE
