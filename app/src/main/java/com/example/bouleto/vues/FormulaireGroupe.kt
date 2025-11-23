@@ -33,24 +33,21 @@ import com.example.bouleto.models.Membre
 
 // 🎨 Liste de couleurs prédéfinies
 val couleursDisponibles = listOf(
-    Color(0xFFFFA726), // Orange
-    Color(0xFFEF5350), // Rouge
-    Color(0xFFEC407A), // Rose
-    Color(0xFFAB47BC), // Violet
-    Color(0xFF7E57C2), // Violet foncé
-    Color(0xFF5C6BC0), // Indigo
-    Color(0xFF42A5F5), // Bleu
-    Color(0xFF29B6F6), // Bleu clair
-    Color(0xFF26C6DA), // Cyan
-    Color(0xFF26A69A), // Teal
-    Color(0xFF66BB6A), // Vert
-    Color(0xFF9CCC65), // Vert clair
-    Color(0xFFD4E157), // Lime
-    Color(0xFFFFEE58), // Jaune
-    Color(0xFFFFCA28), // Ambre
-    Color(0xFFA1887F), // Marron
-    Color(0xFF78909C), // Bleu gris
+
+    Color(0xFFFFB3BA), // 🔴 Rose corail
+    Color(0xFFFFDAB9), // 🧡 Pêche
+    Color(0xFFFFFACD), // 💛 Jaune citron
+    Color(0xFFB4E7CE), // 💚 Vert menthe
+    Color(0xFFADD8E6), // 💙 Bleu ciel
+    Color(0xFFD4BAFF), // 💜 Lavande
+    Color(0xFFFFB6D9), // 💗 Rose bonbon
+    Color(0xFFFFE5B4), // 🥐 Beige pêche
+    Color(0xFFC7F0BD), // 🍃 Vert pomme
+    Color(0xFFB4D4FF)  // 🐬 Bleu pervenche
+
 )
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -307,12 +304,12 @@ fun FormulaireGroupe(
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        // shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = Color.Gray
                         ),
 
-                    ) {
+                        ) {
                         Text(
                             text = "Annuler",
                             fontSize = 16.sp,
@@ -343,7 +340,7 @@ fun FormulaireGroupe(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFFFA726)
                         ),
-                        shape = RoundedCornerShape(12.dp)
+                        // shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
                             text = "Créer le groupe",

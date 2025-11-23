@@ -109,24 +109,63 @@ fun Carte(
         }
     }
 
-    // 🎯 FONCTION : Créer icône redimensionnée
-    fun createResizedIcon(drawableId: Int, size: Int): BitmapDrawable {
-        val cacheKey = "${drawableId}_$size"
+
+    // 🎨 FONCTION : Créer pin coloré en forme de goutte
+    fun createColoredPin(color: Int, size: Int): BitmapDrawable {
+        val cacheKey = "${color}_$size"
 
         return iconCache.getOrPut(cacheKey) {
             try {
-                val drawable = ContextCompat.getDrawable(context, drawableId)
                 val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(bitmap)
-                drawable?.setBounds(0, 0, size, size)
-                drawable?.draw(canvas)
+
+                val paint = android.graphics.Paint().apply {
+                    isAntiAlias = true
+                    style = android.graphics.Paint.Style.FILL
+                }
+
+                // 📍 Corps du pin (cercle)
+                paint.color = color
+                val radius = size * 0.35f
+                val centerX = size / 2f
+                val centerY = size * 0.35f
+                canvas.drawCircle(centerX, centerY, radius, paint)
+
+                // 📍 Pointe du pin (triangle)
+                val path = android.graphics.Path().apply {
+                    moveTo(centerX, centerY + radius * 2.2f) // ⬇️ Pointe vers le bas
+                    lineTo(centerX - radius * 0.5f, centerY + radius) // Haut gauche du triangle
+                    lineTo(centerX + radius * 0.5f, centerY + radius) // Haut droite du triangle
+                    close()
+                }
+                canvas.drawPath(path, paint)
+
+// ⚪ Bordure blanche du cercle
+                paint.apply {
+                    style = android.graphics.Paint.Style.STROKE
+                    strokeWidth = size * 0.06f
+                    this.color = android.graphics.Color.WHITE
+                }
+                canvas.drawCircle(centerX, centerY, radius, paint)
+
+// 📍 Bordure blanche du triangle
+                canvas.drawPath(path, paint)
+
+                paint.apply {
+                    style = android.graphics.Paint.Style.FILL
+                    this.color = android.graphics.Color.WHITE
+                }
+                canvas.drawCircle(centerX, centerY, radius * 0.35f, paint)
+
+
                 BitmapDrawable(context.resources, bitmap)
             } catch (e: Exception) {
-                Log.e("Carte", "Erreur création icône: ${e.message}")
+                Log.e("Carte", "Erreur création pin: ${e.message}")
                 BitmapDrawable(context.resources, Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888))
             }
         }
     }
+
 
     // ✅ BOX AVEC CLIP POUR EMPÊCHER LE DÉBORDEMENT
     Box(
@@ -192,8 +231,8 @@ fun Carte(
                             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
 
                             // 🎯 ICÔNE REDIMENSIONNÉE SELON LE ZOOM
-                            icon = createResizedIcon(
-                                android.R.drawable.ic_menu_mylocation,
+                            icon = createColoredPin(
+                                membre.couleur.toInt(),
                                 markerSize
                             )
                             infoWindow = CustomInfoBulle(context, map, membre, point)

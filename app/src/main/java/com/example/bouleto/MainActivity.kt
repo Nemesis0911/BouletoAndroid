@@ -307,7 +307,7 @@ fun Main() {
                                     val groupeAJour =
                                         groupes.find { it.id == groupeSelectionne.value.id }
                                             ?: groupeSelectionne.value
-                                    Accueil(membres = groupeAJour.membres)
+                                    Accueil(groupe = groupeAJour, viewModel = viewModel)
                                 }
 
                                 is DestinationCarte -> NavEntry(key) {
