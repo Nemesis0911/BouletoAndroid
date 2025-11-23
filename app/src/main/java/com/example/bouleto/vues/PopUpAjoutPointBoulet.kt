@@ -1,6 +1,7 @@
 package com.example.bouleto.vues
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,7 +47,7 @@ fun PopUpAjoutPointBoulet(
     var nombrePoints by remember { mutableStateOf("2") }
     var description by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-
+    val context = LocalContext.current
     val membres = groupeSelectionnee.membres
 
     var adresseRecherche by remember { mutableStateOf("") }
@@ -386,6 +388,7 @@ fun PopUpAjoutPointBoulet(
                                     adresseSelectionnee?.x ?: 0.0,
                                     adresseSelectionnee?.y ?: 0.0
                                 )
+                                Toast.makeText(context, "Point ajouté !", Toast.LENGTH_SHORT).show()
                             }
                         },
                         colors = ButtonDefaults.buttonColors(

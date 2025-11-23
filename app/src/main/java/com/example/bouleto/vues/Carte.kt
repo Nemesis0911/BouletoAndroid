@@ -4,11 +4,20 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +35,13 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.text.font.FontWeight
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.MapTileIndex
 
 
 // 🎨 Style de carte sombre
@@ -50,7 +66,22 @@ fun resizeDrawable(drawable: Drawable, width: Int, height: Int): BitmapDrawable 
     val scaled = Bitmap.createScaledBitmap(bitmap, width, height, true)
     return BitmapDrawable(null, scaled)
 }
-
+private val LIGHT_MAP_TILE_SOURCE = object : OnlineTileSourceBase(
+    "CartoCDBPositron",
+    0, 20, 256, ".png",
+    arrayOf(
+        "https://a.basemaps.cartocdn.com/light_all/",
+        "https://b.basemaps.cartocdn.com/light_all/",
+        "https://c.basemaps.cartocdn.com/light_all/"
+    )
+) {
+    override fun getTileURLString(pMapTileIndex: Long): String {
+        return (baseUrl + MapTileIndex.getZoom(pMapTileIndex)
+                + "/" + MapTileIndex.getX(pMapTileIndex)
+                + "/" + MapTileIndex.getY(pMapTileIndex)
+                + mImageFilenameEnding)
+    }
+}
 @Composable
 fun Carte(
     membres: List<Membre> = emptyList(),
@@ -59,7 +90,7 @@ fun Carte(
 ) {
     val context = LocalContext.current
     var mapView by remember { mutableStateOf<MapView?>(null) }
-    val iconCache = remember { mutableMapOf<Int, BitmapDrawable>() }
+    val iconCache = remember { mutableMapOf<String, BitmapDrawable>() }
 
     // Configuration OSMDroid
     DisposableEffect(Unit) {
@@ -71,21 +102,56 @@ fun Carte(
         onDispose { }
     }
 
+    // 🎯 FONCTION : Calculer la taille selon le zoom
+    fun getMarkerSizeForZoom(zoomLevel: Double): Int {
+        return when {
+            zoomLevel < 5 -> 40
+            zoomLevel < 8 -> 60
+            zoomLevel < 12 -> 80
+            zoomLevel < 15 -> 100
+            else -> 120
+        }
+    }
+
+    // 🎯 FONCTION : Créer icône redimensionnée
+    fun createResizedIcon(drawableId: Int, size: Int): BitmapDrawable {
+        val cacheKey = "${drawableId}_$size"
+
+        return iconCache.getOrPut(cacheKey) {
+            try {
+                val drawable = ContextCompat.getDrawable(context, drawableId)
+                val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                drawable?.setBounds(0, 0, size, size)
+                drawable?.draw(canvas)
+                BitmapDrawable(context.resources, bitmap)
+            } catch (e: Exception) {
+                Log.e("Carte", "Erreur création icône: ${e.message}")
+                BitmapDrawable(context.resources, Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888))
+            }
+        }
+    }
+
     // ✅ BOX AVEC CLIP POUR EMPÊCHER LE DÉBORDEMENT
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .clipToBounds()  // 🔥 CLEF : Empêche la carte de déborder
+            .clipToBounds()
     ) {
         // 🗺️ CARTE
         AndroidView(
             modifier = Modifier
                 .fillMaxSize()
-                .clipToBounds(),  // 🔥 Double sécurité
+                .clipToBounds(),
             factory = { ctx ->
                 MapView(ctx).apply {
-                    setTileSource(DARK_MAP_TILE_SOURCE)
+                    setTileSource(LIGHT_MAP_TILE_SOURCE)
                     setMultiTouchControls(true)
+
+                    zoomController.setVisibility(
+                        org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER
+                    )
+
                     controller.setZoom(5.0)
                     controller.setCenter(GeoPoint(48.8566, 2.3522))
 
@@ -93,20 +159,30 @@ fun Carte(
                     minZoomLevel = 3.0
                     maxZoomLevel = 19.0
 
-                    // ✅ IMPORTANT : Désactiver le scroll fling agressif
-                    isHorizontalMapRepetitionEnabled = false
+                    isHorizontalMapRepetitionEnabled = true
                     isVerticalMapRepetitionEnabled = false
-                    setScrollableAreaLimitLatitude(
-                        MapView.getTileSystem().maxLatitude,
-                        MapView.getTileSystem().minLatitude,
-                        0
-                    )
+
+                    // 🎯 ÉCOUTEUR DE ZOOM
+                    addMapListener(object : MapListener {
+                        override fun onScroll(event: ScrollEvent?): Boolean = false
+
+                        override fun onZoom(event: ZoomEvent?): Boolean {
+                            event?.let {
+                                Log.d("Carte", "Zoom: ${it.zoomLevel}")
+                                invalidate()
+                            }
+                            return true
+                        }
+                    })
 
                     mapView = this
                 }
             },
             update = { map ->
-                map.overlays.clear()
+                map.overlays.removeAll { it is Marker }
+
+                val currentZoom = map.zoomLevelDouble
+                val markerSize = getMarkerSizeForZoom(currentZoom)
 
                 membres.forEach { membre ->
                     membre.point.forEach { point ->
@@ -115,29 +191,28 @@ fun Carte(
 
                         val marker = Marker(map).apply {
                             position = GeoPoint(lat, lon)
-                            title = membre.nom
-                            snippet = "${membre.nom.uppercase()} ${membre.prenom}"
+                            title = membre.nom.uppercase() + " "+ membre.prenom.uppercase()
+                            snippet = "${point.score}" + " points"
                             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
 
-                            try {
-                                val drawable = ContextCompat.getDrawable(
-                                    map.context,
-                                    android.R.drawable.ic_menu_mylocation
-                                )
-                                drawable?.let { d ->
-                                    val zoom = map.zoomLevelDouble
-                                    val iconSize = (400 * (zoom / 10.0)).toInt().coerceIn(30, 80)
+                            // 🎯 ICÔNE REDIMENSIONNÉE SELON LE ZOOM
+                            icon = createResizedIcon(
+                                android.R.drawable.ic_menu_mylocation,
+                                markerSize
+                            )
+                            infoWindow = CustomInfoBulle(context, map, membre, point)
 
-                                    val cached = iconCache[iconSize] ?: run {
-                                        val resized = resizeDrawable(d, iconSize, iconSize)
-                                        iconCache[iconSize] = resized
-                                        resized
-                                    }
+                            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
 
-                                    icon = cached
-                                }
-                            } catch (e: Exception) {
-                                android.util.Log.e("Carte", "Erreur icône", e)
+                            // 👆 CLIC pour ouvrir la bulle
+                            setOnMarkerClickListener { clickedMarker, _ ->
+                                // Ferme toutes les autres bulles
+                                map.overlays.filterIsInstance<Marker>()
+                                    .forEach { it.closeInfoWindow() }
+
+                                // Ouvre celle-ci
+                                clickedMarker.showInfoWindow()
+                                true
                             }
                         }
 
@@ -161,7 +236,7 @@ fun Carte(
                 containerColor = Color.White,
                 contentColor = Color(0xFFFFB300)
             ) {
-                Icon(Icons.Default.Add, "Zoom avant")
+                Icon(Icons.Default.KeyboardArrowUp, "Zoom avant")
             }
 
             FloatingActionButton(
@@ -169,12 +244,12 @@ fun Carte(
                 containerColor = Color.White,
                 contentColor = Color(0xFFFFB300)
             ) {
-                Icon(Icons.Default.Close, "Zoom arrière")
+                Icon(Icons.Default.KeyboardArrowDown, "Zoom arrière")
             }
 
             FloatingActionButton(
                 onClick = {
-                    mapView?.controller?.animateTo(GeoPoint(48.8566, 2.3522))
+                    mapView?.controller?.animateTo(GeoPoint(43.36429, 2.14203))
                 },
                 containerColor = Color(0xFFFFB300),
                 contentColor = Color.White
@@ -184,3 +259,93 @@ fun Carte(
         }
     }
 }
+
+@Composable
+fun BulleInfoMarker(
+    nom: String,
+    prenom: String,
+    adresse: String,
+    points: Int,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .width(250.dp)
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(2.dp, Color(0xFFFFB300))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // 👤 NOM ET PRÉNOM
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = Color(0xFFFFB300),
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "$prenom $nom",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF333333)
+                )
+            }
+
+            // 📍 ADRESSE
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Place,
+                    contentDescription = null,
+                    tint = Color(0xFF666666),
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = adresse,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF666666)
+                )
+            }
+
+            // ⭐ POINTS
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = Color(0xFFFFF8E1),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    tint = Color(0xFFFFB300),
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "$points points",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFFFFB300)
+                )
+            }
+        }
+    }
+}
+
