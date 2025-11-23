@@ -341,7 +341,7 @@ fun EcranAucunGroupe() {
                         color = Color(0xFF333333)
                     )
                     Text(
-                        text = "Clique sur la carte du groupe pour commencer à jouer",
+                        text = "Clique sur la carte du groupe pour commencer à compter les points de tes membres !",
                         fontSize = 14.sp,
                         color = Color(0xFF888888),
                         lineHeight = 20.sp
