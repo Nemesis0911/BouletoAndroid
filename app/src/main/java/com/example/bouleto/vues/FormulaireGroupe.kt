@@ -1,5 +1,6 @@
 package com.example.bouleto.vues
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -296,56 +297,66 @@ fun FormulaireGroupe(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Bouton Créer le groupe
-                Button(
-                    onClick = {
-                        // ✅ Ajoute le dernier membre si les champs sont remplis
-                        var membresFinaux = membres
-                        if (pseudoActuel.isNotBlank()) {
-                            membresFinaux = membresFinaux + Membre(
-                                pseudo = pseudoActuel,
-                                couleur= couleurNouveauMembre.toArgb().toLong()
-                            )
-                        }
-
-                        if (nomGroupe.isNotBlank() && membresFinaux.isNotEmpty()) {
-                            onValider(nomGroupe, membresFinaux)
-                            onDismiss()
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    enabled = nomGroupe.isNotBlank() && (membres.isNotEmpty() || pseudoActuel.isNotBlank()),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFFA726)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "Créer le groupe",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White
-                    )
-                }
+                    // Bouton Annuler à gauche
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.Gray
+                        ),
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    ) {
+                        Text(
+                            text = "Annuler",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
 
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                ) {
-                    Text(
-                        text = "Annuler",
-                        fontSize = 16.sp,
-                        color = Color.Gray
-                    )
+                    // Bouton Créer le groupe à droite
+                    Button(
+                        onClick = {
+                            // Ajoute le dernier membre si les champs sont remplis
+                            var membresFinaux = membres
+                            if (pseudoActuel.isNotBlank()) {
+                                membresFinaux = membresFinaux + Membre(
+                                    pseudo = pseudoActuel,
+                                    couleur = couleurNouveauMembre.toArgb().toLong()
+                                )
+                            }
+
+                            if (nomGroupe.isNotBlank() && membresFinaux.isNotEmpty()) {
+                                onValider(nomGroupe, membresFinaux)
+                                onDismiss()
+                            }
+                        },
+                        modifier = Modifier
+                            .height(40.dp),
+                        enabled = nomGroupe.isNotBlank() && (membres.isNotEmpty() || pseudoActuel.isNotBlank()),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFA726)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "Créer le groupe",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }
     }
+
 
     // 🎨 Popup de sélection de couleur
     if (afficherSelecteurCouleur) {

@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bouleto.models.Membre
@@ -27,6 +30,10 @@ fun Accueil(membres: List<Membre>) {
     // On trie par points décroissants
     val membresTries = membres.sortedByDescending { it.scoreTotal }
 
+    if(membresTries.isEmpty()) {
+        EcranAucunGroupe()
+        return
+    }
     TableauClassement(membres = membresTries)
 }
 
@@ -200,16 +207,161 @@ fun TableauClassement(membres: List<Membre>) {
     }
 }
 
-// Fonction utilitaire pour générer une couleur sympa
-fun genererCouleurAleatoire(cle: String): Color {
-    val couleurs = listOf(
-        Color(0xFFfe9d15),
-        Color(0xFFc0f0ee),
-        Color(0xFFfebb5f),
-        Color(0xFF2dbdb4),
+//// Fonction utilitaire pour générer une couleur sympa
+//fun genererCouleurAleatoire(cle: String): Color {
+//    val couleurs = listOf(
+//        Color(0xFFfe9d15),
+//        Color(0xFFc0f0ee),
+//        Color(0xFFfebb5f),
+//        Color(0xFF2dbdb4),
+//
+//    )
+//    // On utilise le hashCode de la chaîne (ex: "JeanDupont") pour choisir toujours la même couleur pour la même personne
+//    val index = abs(cle.hashCode()) % couleurs.size
+//    return couleurs[index]
+//}
 
-    )
-    // On utilise le hashCode de la chaîne (ex: "JeanDupont") pour choisir toujours la même couleur pour la même personne
-    val index = abs(cle.hashCode()) % couleurs.size
-    return couleurs[index]
+@Composable
+fun EcranAucunGroupe() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(28.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // Icône décorative
+            Icon(
+                imageVector = Icons.Default.Home,
+                contentDescription = null,
+                modifier = Modifier.size(50.dp),
+                tint = Color(0xFFFFA726).copy(alpha = 0.7f)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Titre
+            Text(
+                text = "Aucun groupe sélectionné",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF333333),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Texte explicatif
+            Text(
+                text = "Pour commencer à jouer :",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF666666),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Étape 1
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(
+                            color = Color(0xFFFFA726),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "1",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Créer un groupe",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF333333)
+                    )
+                    Text(
+                        text = "Rends toi sur le Menu Burger sur les 3 traits ou en swipant vers la droite. Puis" +
+                                "appuie sur \"Créer un nouveau groupe\" en haut. Ajoute des membres, un pseudo et une couleur chacun !",
+                        fontSize = 14.sp,
+                        color = Color(0xFF888888),
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Étape 2
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(
+                            color = Color(0xFFFFA726),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "2",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Sélectionner le groupe",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF333333)
+                    )
+                    Text(
+                        text = "Clique sur la carte du groupe pour commencer à jouer",
+                        fontSize = 14.sp,
+                        color = Color(0xFF888888),
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Message encourageant
+            Text(
+                text = "🎯 C'est parti pour traquer les boulets !",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFFFFA726),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
 }
+
+
+
