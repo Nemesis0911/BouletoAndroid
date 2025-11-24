@@ -1,5 +1,6 @@
 package com.example.bouleto.vues
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -318,6 +320,8 @@ fun FormulaireGroupe(
                     }
 
                     // Bouton Créer le groupe à droite
+                    val context = LocalContext.current // ✅ Ajoute ceci AVANT le Button
+
                     Button(
                         onClick = {
                             // Ajoute le dernier membre si les champs sont remplis
@@ -330,8 +334,22 @@ fun FormulaireGroupe(
                             }
 
                             if (nomGroupe.isNotBlank() && membresFinaux.isNotEmpty()) {
+                                // ✅ TOAST ICI
+                                Toast.makeText(
+                                    context,
+                                    "Groupe \"$nomGroupe\" créé avec ${membresFinaux.size} membre(s) !",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
                                 onValider(nomGroupe, membresFinaux)
                                 onDismiss()
+                            } else {
+                                // ✅ TOAST D'ERREUR (optionnel)
+                                Toast.makeText(
+                                    context,
+                                    "Veuillez remplir tous les champs",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         },
                         modifier = Modifier
@@ -340,7 +358,6 @@ fun FormulaireGroupe(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFFFA726)
                         ),
-                        // shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
                             text = "Créer le groupe",

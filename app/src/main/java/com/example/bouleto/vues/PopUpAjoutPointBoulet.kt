@@ -412,6 +412,7 @@ fun PopUpAjoutPointBoulet(
                                                         adresseRecherche = adresse.fulltext.toString()
                                                         adresseSelectionnee = adresse
                                                         showSuggestions = false
+                                                        focusManager.clearFocus()
                                                     }
                                                     .padding(horizontal = 16.dp, vertical = 12.dp)
                                             ) {
@@ -504,20 +505,20 @@ fun PopUpAjoutPointBoulet(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Description
-                Text(text = "Description (optionnel)", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    placeholder = { Text("Ex: A oublié ses clés...") },
-                    modifier = Modifier.fillMaxWidth().height(80.dp),
-                    maxLines = 3,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFFFB300),
-                        unfocusedBorderColor = Color.LightGray
-                    )
-                )
+                // Description - Fonctionnalitée à venir
+//                Text(text = "Description (optionnel)", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+//                Spacer(modifier = Modifier.height(8.dp))
+//                OutlinedTextField(
+//                    value = description,
+//                    onValueChange = { description = it },
+//                    placeholder = { Text("Ex: A oublié ses clés...") },
+//                    modifier = Modifier.fillMaxWidth().height(80.dp),
+//                    maxLines = 3,
+//                    colors = OutlinedTextFieldDefaults.colors(
+//                        focusedBorderColor = Color(0xFFFFB300),
+//                        unfocusedBorderColor = Color.LightGray
+//                    )
+//                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -539,7 +540,7 @@ fun PopUpAjoutPointBoulet(
                                 android.util.Log.d("PopUpAjout", "🔵 Sauvegarde: Lat=$lat, Lon=$lon")
 
                                 onConfirm(membre, nombrePoints.toIntOrNull() ?: 2, description.ifBlank { null }, lat, lon)
-                                Toast.makeText(context, "Point ajouté !", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Point(s) ajouté(s) !", Toast.LENGTH_SHORT).show()
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFB300)),

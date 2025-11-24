@@ -35,11 +35,17 @@ import org.osmdroid.views.overlay.Marker
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.text.font.FontWeight
 import com.example.bouleto.models.Point
+import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
 import org.osmdroid.util.MapTileIndex
+
+
+import org.osmdroid.views.overlay.MapEventsOverlay
+
+
 
 
 //// 🎨 Style de carte sombre
@@ -221,6 +227,26 @@ fun Carte(
                 val currentZoom = map.zoomLevelDouble
                 val markerSize = getMarkerSizeForZoom(currentZoom)
 
+                // ✅ Créer le receiver (objet qui écoute les événements)
+                val mapEventsReceiver = object : MapEventsReceiver {
+                    override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
+                        // Ferme toutes les bulles quand on clique sur la carte
+                        map.overlays.filterIsInstance<Marker>()
+                            .forEach { it.closeInfoWindow() }
+                        return true
+                    }
+
+                    override fun longPressHelper(p: GeoPoint?): Boolean {
+                        return false
+                    }
+                }
+
+                // Retire l'ancien overlay d'événements s'il existe
+                map.overlays.removeAll { it is MapEventsOverlay }
+
+                // ✅ Ajoute avec le BON NOM DE VARIABLE (avec 'r' à la fin)
+                map.overlays.add(0, MapEventsOverlay(mapEventsReceiver))
+
                 membres.forEach { membre ->
                     membre.point.forEach { point ->
                         val lat = point.latidute
@@ -232,22 +258,15 @@ fun Carte(
                             snippet = "${point.score}" + " points"
                             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
 
-                            // 🎯 ICÔNE REDIMENSIONNÉE SELON LE ZOOM
                             icon = createColoredPin(
                                 membre.couleur.toInt(),
                                 markerSize
                             )
                             infoWindow = CustomInfoBulle(context, map, membre, point)
 
-                            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-
-                            // 👆 CLIC pour ouvrir la bulle
                             setOnMarkerClickListener { clickedMarker, _ ->
-                                // Ferme toutes les autres bulles
                                 map.overlays.filterIsInstance<Marker>()
                                     .forEach { it.closeInfoWindow() }
-
-                                // Ouvre celle-ci
                                 clickedMarker.showInfoWindow()
                                 true
                             }
@@ -259,6 +278,7 @@ fun Carte(
 
                 map.invalidate()
             }
+
         )
 
         // 🎮 CONTRÔLES DE ZOOM
@@ -349,7 +369,7 @@ fun BulleInfoMarker(
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
-                    text = "" + point.latidute + point.longitude,
+                    text = "" + point.latidute + " - " + point.longitude,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF666666)
                 )
