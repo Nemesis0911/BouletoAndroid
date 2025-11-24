@@ -270,26 +270,39 @@ fun Main() {
 
                     if (afficherDialogPoint.value) {
                         PopUpAjoutPointBoulet(
-                            onDismiss = { afficherDialogPoint.value = false },
-                            onConfirm = { membreSelectionne, pointsAjoutes, description, x, y ->
-                                viewModel.updateGroupe(
-                                    groupeSelectionne.value,
-                                    membreSelectionne,
-                                    pointsAjoutes,
-                                    y,
-                                    x
-                                )
+                            onDismiss = {
                                 afficherDialogPoint.value = false
-                                viewModel.getAll()
+                            },
+                            onConfirm = { membreSelectionne, pointsAjoutes, description, latitude, longitude ->
+                                // ✅ Mise à jour du groupe avec les coordonnées GPS
+                                Log.d("MainActivity", "🟢 onConfirm reçu:")
+                                Log.d("MainActivity", "   - Membre: ${membreSelectionne.pseudo}")
+                                Log.d("MainActivity", "   - Points: $pointsAjoutes")
+                                Log.d("MainActivity", "   - Description: $description")
+                                Log.d("MainActivity", "   - Latitude: $latitude")
+                                Log.d("MainActivity", "   - Longitude: $longitude")
+                                viewModel.updateGroupe(
+                                    groupe = groupeSelectionne.value,
+                                    membre = membreSelectionne,
+                                    score = pointsAjoutes,
+                                    lat = latitude,
+                                    long = longitude,
+
+                                )
+
+                                afficherDialogPoint.value = false
+
+                                // ✅ Rafraîchir les données
                                 scope.launch {
                                     kotlinx.coroutines.delay(200)
                                     viewModel.getAll()
                                 }
                             },
-                            viewModel = viewModel,
-                            groupeSelectionnee = viewModel.groupeSelectionne.collectAsState().value
+                            groupeSelectionnee = groupeSelectionne.value,
+                            viewModel = viewModel
                         )
                     }
+
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))

@@ -70,7 +70,8 @@ android {
         implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
         implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
         implementation("androidx.compose.ui:ui-viewbinding:1.6.0")
-
+        implementation("com.google.android.gms:play-services-location:21.1.0")
+        implementation("com.google.accompanist:accompanist-permissions:0.32.0")
 
         implementation("com.squareup.moshi:moshi:1.15.0")
         implementation("com.squareup.moshi:moshi-kotlin:1.15.0")

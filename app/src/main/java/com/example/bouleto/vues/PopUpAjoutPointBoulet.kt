@@ -12,28 +12,21 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -41,34 +34,71 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
-import androidx.compose.ui.zIndex
 import com.example.bouleto.MainViewmodel
 import com.example.bouleto.models.Groupe
 import com.example.bouleto.models.Membre
 import com.example.bouleto.models.Result
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun PopUpAjoutPointBoulet(
     onDismiss: () -> Unit,
-    onConfirm: (Membre, Int, String? ,Double ,Double) -> Unit,
+    onConfirm: (Membre, Int, String?, Double, Double) -> Unit,
     groupeSelectionnee: Groupe,
     viewModel: MainViewmodel
 ) {
+    // ✅ Variables d'état
     var membreSelectionne by remember { mutableStateOf<Membre?>(null) }
     var nombrePoints by remember { mutableStateOf("2") }
     var description by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val membres = groupeSelectionnee.membres
-
+    var latitude by remember { mutableStateOf("") }
+    var longitude by remember { mutableStateOf("") }
     var adresseRecherche by remember { mutableStateOf("") }
     var adresseSelectionnee by remember { mutableStateOf<Result?>(null) }
     var showSuggestions by remember { mutableStateOf(false) }
 
     // ✅ Observer le StateFlow
     val resultatsApi by viewModel.resultatApi.collectAsState()
+
+    val context = LocalContext.current
+    val membres = groupeSelectionnee.membres
+
+    // ✅ Observer la localisation
+    val currentLocation by viewModel.currentLocation.collectAsState()
+    val isLoadingLocation by viewModel.isLoadingLocation.collectAsState()
+
+    val locationPermissionState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    )
+
+    // ✅ Mettre à jour les champs quand la position GPS arrive
+    LaunchedEffect(currentLocation) {
+        currentLocation?.let { (lat, lon) ->
+            latitude = lat.toString()
+            longitude = lon.toString()
+            android.util.Log.d("PopUpAjout", "📍 GPS reçu: Lat=$lat, Lon=$lon")
+        }
+    }
+
+    // ✅ Mettre à jour les champs quand une adresse est sélectionnée
+    LaunchedEffect(adresseSelectionnee) {
+        adresseSelectionnee?.let { adresse ->
+            latitude = adresse.y.toString()  // y = latitude
+            longitude = adresse.x.toString()  // x = longitude
+            android.util.Log.d("PopUpAjout", "📍 Adresse sélectionnée: ${adresse.fulltext}")
+            android.util.Log.d("PopUpAjout", "   Coordonnées: Lat=${adresse.y}, Lon=${adresse.x}")
+        }
+    }
+
+    LaunchedEffect(locationPermissionState.allPermissionsGranted) {
+        viewModel.updateLocationPermission(locationPermissionState.allPermissionsGranted)
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -81,7 +111,8 @@ fun PopUpAjoutPointBoulet(
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             shape = RoundedCornerShape(16.dp),
             color = Color.White,
             shadowElevation = 8.dp
@@ -114,10 +145,7 @@ fun PopUpAjoutPointBoulet(
                         )
                     }
                     IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Fermer"
-                        )
+                        Icon(Icons.Default.Close, contentDescription = "Fermer")
                     }
                 }
 
@@ -127,64 +155,56 @@ fun PopUpAjoutPointBoulet(
                 Text(
                     text = "Sélectionner un membre",
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black
+                    fontWeight = FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // ✅ BOX AVEC DROPDOWN CLASSIQUE
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { expanded = !expanded }  // ✅ Toute la box est cliquable
-                ) {
+                Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
-                        value = membreSelectionne?.let { "${it.pseudo}" } ?: "",
+                        value = membreSelectionne?.pseudo ?: "",
                         onValueChange = {},
                         readOnly = true,
                         placeholder = { Text("Sélectionner un membre") },
                         trailingIcon = {
-                            Icon(
-                                imageVector = if (expanded)
-                                    Icons.Default.KeyboardArrowUp
-                                else
-                                    Icons.Default.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = Color.DarkGray  // ✅ Flèche gris foncé
-                            )
+                            IconButton(onClick = { expanded = !expanded }) {
+                                Icon(
+                                    imageVector = if (expanded)
+                                        Icons.Default.KeyboardArrowUp
+                                    else
+                                        Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null
+                                )
+                            }
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { expanded = !expanded },
                         colors = OutlinedTextFieldDefaults.colors(
-                            //disabledBorderColor = Color.DarkGray,  // ✅ Bordure gris foncé
-                            disabledTextColor = Color.Black,  // ✅ Texte noir
-                            disabledPlaceholderColor = Color.Gray,  // ✅ Placeholder gris
-                            disabledTrailingIconColor = Color.DarkGray,  // ✅ Icône gris foncé
                             focusedBorderColor = Color(0xFFFFB300),
-                            unfocusedBorderColor = Color.LightGray
+                            unfocusedBorderColor = Color.LightGray,
+                            disabledTextColor = Color.Black,
+                            disabledBorderColor = Color.LightGray
                         ),
                         enabled = false
                     )
 
-                    // ✅ DROPDOWN MENU AVEC LARGEUR LIMITÉE
                     DropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
                         modifier = Modifier
                             .fillMaxWidth(0.72f)
                             .heightIn(max = 200.dp)
-                            .background(Color.White)
-                            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp))
                     ) {
                         if (membres.isEmpty()) {
                             DropdownMenuItem(
-                                text = { Text("Aucun membre dans ce groupe") },
-                                onClick = { },
+                                text = { Text("Aucun membre") },
+                                onClick = {},
                                 enabled = false
                             )
                         } else {
                             membres.forEach { membre ->
                                 DropdownMenuItem(
-                                    text = { Text("${membre.pseudo}") },
+                                    text = { Text(membre.pseudo) },
                                     onClick = {
                                         membreSelectionne = membre
                                         expanded = false
@@ -198,12 +218,7 @@ fun PopUpAjoutPointBoulet(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Nombre de points
-                Text(
-                    text = "Nombre de points",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black
-                )
+                Text(text = "Nombre de points", fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = nombrePoints,
@@ -213,32 +228,57 @@ fun PopUpAjoutPointBoulet(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFFFFB300),
                         unfocusedBorderColor = Color.LightGray
-                    )
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
 
-//Champ adresse
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ✅ BOUTON GPS
+                Button(
+                    onClick = {
+                        if (locationPermissionState.allPermissionsGranted) {
+                            viewModel.getCurrentLocation()
+                        } else {
+                            locationPermissionState.launchMultiplePermissionRequest()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFB300)),
+                    enabled = !isLoadingLocation
+                ) {
+                    if (isLoadingLocation) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Localisation...")
+                    } else {
+                        Icon(Icons.Default.LocationOn, contentDescription = "GPS", modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Utiliser ma position GPS")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ✅ RECHERCHE D'ADRESSE
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Adresse de l'action (optionnel)",
+                        text = "Ou rechercher une adresse",
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
                     )
-
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // ✅ Variables pour tracker la position et taille du TextField
                     var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
-                    var textFieldPosition by remember { mutableStateOf(Offset.Zero) }
 
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
                         val focusRequester = remember { FocusRequester() }
                         val focusManager = LocalFocusManager.current
 
-                        // TEXTFIELD
                         OutlinedTextField(
                             value = adresseRecherche,
                             onValueChange = { nouvelleValeur ->
@@ -252,9 +292,7 @@ fun PopUpAjoutPointBoulet(
                                     showSuggestions = false
                                 }
                             },
-                            placeholder = {
-                                Text("Commencez à taper une adresse...", color = Color.Gray)
-                            },
+                            placeholder = { Text("Ex: 10 Rue de Rivoli, Paris") },
                             trailingIcon = {
                                 if (adresseRecherche.isNotEmpty()) {
                                     IconButton(onClick = {
@@ -262,11 +300,7 @@ fun PopUpAjoutPointBoulet(
                                         adresseSelectionnee = null
                                         showSuggestions = false
                                     }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Clear,
-                                            contentDescription = "Effacer",
-                                            tint = Color.Black
-                                        )
+                                        Icon(Icons.Default.Clear, contentDescription = "Effacer")
                                     }
                                 }
                             },
@@ -274,154 +308,97 @@ fun PopUpAjoutPointBoulet(
                                 .fillMaxWidth()
                                 .focusRequester(focusRequester)
                                 .onGloballyPositioned { coordinates ->
-                                    // ✅ Récupère la position et taille du TextField
                                     textFieldSize = coordinates.size
-                                    textFieldPosition = coordinates.positionInWindow()
                                 },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color(0xFFFFB300),
-                                unfocusedBorderColor = Color.LightGray,
-                                focusedTextColor = Color.Black,
-                                unfocusedTextColor = Color.Black
+                                unfocusedBorderColor = Color.LightGray
                             ),
                             singleLine = true,
-                            keyboardOptions = KeyboardOptions(
-                                imeAction = ImeAction.Done
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    focusManager.clearFocus()
-                                }
-                            )
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
                         )
 
-                        // ✅ POPUP - Positionné AU DESSUS du TextField
-                        if (resultatsApi.results.isNotEmpty() && showSuggestions && textFieldSize != IntSize.Zero) {
-                            val dropdownHeight = minOf(200.dp, (resultatsApi.results.size * 60).dp)
-                            val dropdownHeightPx =
-                                with(LocalDensity.current) { dropdownHeight.toPx() }
-                            val extraPadding =
-                                with(LocalDensity.current) { 320.dp.toPx() } // ✅ Espace supplémentaire
-
-                            Popup(
-                                //alignment = Alignment.Center,
-                                offset = IntOffset(
-                                    x = textFieldPosition.x.toInt() - 150,
-                                    y = textFieldPosition.y.toInt() - dropdownHeightPx.toInt() - extraPadding.toInt()  // ✅ Ajoute un padding
-                                )
-                            ) {
-                                Surface(
-                                    modifier = Modifier
-                                        .width(with(LocalDensity.current) {
-                                            textFieldSize.width.toDp()
-                                        })
-                                        .height(dropdownHeight),
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = Color.White,
-                                    //shadowElevation = 30.dp,
-                                    border = BorderStroke(1.dp, Color.LightGray)
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .verticalScroll(rememberScrollState())
-                                    ) {
-                                        resultatsApi.results.forEach { adresse ->
-                                            Surface(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .clickable {
-                                                        adresseRecherche = adresse?.fulltext ?: ""
-                                                        adresseSelectionnee = adresse
-                                                        showSuggestions = false
-                                                        focusManager.clearFocus()
-                                                    },
-                                                color = Color.White
-                                            ) {
-                                                Column(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(12.dp)
-                                                ) {
-                                                    Text(
-                                                        text = adresse?.fulltext ?: "",
-                                                        fontSize = 14.sp,
-                                                        fontWeight = FontWeight.Medium,
-                                                        color = Color.Black
-                                                    )
-                                                    Text(
-                                                        text = "${adresse.city}",
-                                                        fontSize = 12.sp,
-                                                        color = Color.Gray
-                                                    )
-                                                }
-                                            }
-
-                                            if (adresse != resultatsApi.results.last()) {
-                                                Divider(
-                                                    color = Color.LightGray,
-                                                    thickness = 0.5.dp
-                                                )
-                                            }
+                        // ✅ DROPDOWN DES SUGGESTIONS
+                        DropdownMenu(
+                            expanded = resultatsApi.results.isNotEmpty() && showSuggestions,
+                            onDismissRequest = { showSuggestions = false },
+                            modifier = Modifier
+                                .width(with(LocalDensity.current) { textFieldSize.width.toDp() })
+                                .heightIn(max = 200.dp)
+                        ) {
+                            resultatsApi.results.forEach { adresse ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Column {
+                                            Text(
+                                                text = adresse.fulltext.toString(),
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                            Text(
+                                                text = adresse.city ?: "",
+                                                fontSize = 12.sp,
+                                                color = Color.Gray
+                                            )
                                         }
+                                    },
+                                    onClick = {
+                                        adresseRecherche = adresse.fulltext.toString()
+                                        adresseSelectionnee = adresse
+                                        showSuggestions = false
+                                        focusManager.clearFocus()
                                     }
-                                }
+                                )
                             }
                         }
-                    }}
+                    }
+                }
 
-//Description
-//                Text(
-//                    text = "Description de l'action (optionnel)",
-//                    fontSize = 14.sp,
-//                    fontWeight = FontWeight.Medium,
-//                    color = Color.Black,
-//                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-
-
-
-
-
-                // ✅ AFFICHAGE ADRESSE SÉLECTIONNÉE
-//                if (adresseSelectionnee != null) {
-//                    Card(
-//                        modifier = Modifier.fillMaxWidth(),
-//                        colors = CardDefaults.cardColors(
-//                            containerColor = Color(0xFF2D2D2D)
-//                        )
-//                    ) {
-//                        Column(modifier = Modifier.padding(12.dp)) {
-//                            Text(
-//                                text = "Adresse sélectionnée :",
-//                                fontSize = 12.sp,
-//                                color = Color.Gray
-//                            )
-//                            Text(
-//                                text = adresseSelectionnee!!.fulltext ?: "",
-//                                fontSize = 14.sp,
-//                                color = Color.White,
-//                                fontWeight = FontWeight.Bold
-//                            )
-//                        }
-//                    }
-//                }
+                // Latitude/Longitude (lecture seule)
+                Text(text = "Coordonnées (automatique)", fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(8.dp))
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = latitude,
+                        onValueChange = {},
+                        label = { Text("Latitude") },
+                        readOnly = true,
+                        modifier = Modifier.weight(1f),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledBorderColor = Color.LightGray,
+                            disabledTextColor = Color.Black
+                        ),
+                        enabled = false
+                    )
+
+                    OutlinedTextField(
+                        value = longitude,
+                        onValueChange = {},
+                        label = { Text("Longitude") },
+                        readOnly = true,
+                        modifier = Modifier.weight(1f),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledBorderColor = Color.LightGray,
+                            disabledTextColor = Color.Black
+                        ),
+                        enabled = false
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Description
-                Text(
-                    text = "Description de l'action (optionnel)",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black
-                )
+                Text(text = "Description (optionnel)", fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    placeholder = { Text("Ex: A oublié ses clés pour la 3ème fois...") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp),
+                    placeholder = { Text("Ex: A oublié ses clés...") },
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
                     maxLines = 3,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFFFFB300),
@@ -443,20 +420,17 @@ fun PopUpAjoutPointBoulet(
                     Button(
                         onClick = {
                             membreSelectionne?.let { membre ->
-                                onConfirm(
-                                    membre,
-                                    nombrePoints.toIntOrNull() ?: 0,
-                                    description,
-                                    adresseSelectionnee?.x ?: 0.0,
-                                    adresseSelectionnee?.y ?: 0.0
-                                )
+                                val lat = latitude.toDoubleOrNull() ?: 0.0
+                                val lon = longitude.toDoubleOrNull() ?: 0.0
+
+                                android.util.Log.d("PopUpAjout", "🔵 Sauvegarde: Lat=$lat, Lon=$lon")
+
+                                onConfirm(membre, nombrePoints.toIntOrNull() ?: 2, description.ifBlank { null }, lat, lon)
                                 Toast.makeText(context, "Point ajouté !", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFFB300)
-                        ),
-                        enabled = membreSelectionne != null
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFB300)),
+                        enabled = membreSelectionne != null && latitude.isNotEmpty() && longitude.isNotEmpty()
                     ) {
                         Text("Ajouter les points")
                     }
@@ -464,9 +438,4 @@ fun PopUpAjoutPointBoulet(
             }
         }
     }
-
-
 }
-
-
-
