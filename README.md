@@ -26,16 +26,15 @@ L'application s'articule autour de trois axes majeurs : la gestion de groupes, l
 *   **Ajout de points :** Un système de popup rapide permet d'ajouter des points à un membre.
     *   Sélection du membre fautif.
     *   Définition du nombre de points (le score).
-    *   Ajout d'une description de la bêtise.
-    *   **Enregistrement automatique de la position GPS** (Latitude/Longitude) de l'événement.
+    *   **Enregistrement automatique de la position GPS** (Latitude/Longitude) de l'événement ou possibilité de saisir une adresse manuellement.
 
 ### 3. Carte Interactive (Maps) 📍
 *   **Visualisation :** Retrouvez tous les lieux où les "actions boulets" se sont déroulées sur une carte interactive.
 *   **Souvenirs :** Chaque pin sur la carte permet de se remémorer l'anecdote associée au lieu.
-*   **Filtres :** (À venir) Distinction des groupes par couleurs de marqueurs.
+*   **Filtres :**  Distinction des membres par couleurs de marqueurs.
 
 ### 4. Paramètres ⚙️
-*   Configuration de l'application et gestion des préférences utilisateur.
+*   à venir, pour le moment, page d'information
 
 ## 📱 Interface Utilisateur & Navigation
 
@@ -60,7 +59,7 @@ Ce projet est développé en **Kotlin** natif pour Android.
 Pour rendre l'expérience encore plus complète, plusieurs évolutions sont envisagées :
 
 *   **Enrichissement des preuves :** Possibilité d'ajouter une **photo** ou une courte vidéo pour immortaliser le "flagrant délit".
-*   **Description détaillée :** Amélioration du champ description pour raconter l'anecdote avec plus de précision.
+*   **Description  :** Mise en place d'un champ description pour raconter l'anecdote avec plus de précision.
 *   **Gestion depuis la carte :** Possibilité de consulter les détails et de **supprimer un point boulet** directement en cliquant sur son marqueur sur la carte.
 
 ## 🎨 Maquettes et Design
