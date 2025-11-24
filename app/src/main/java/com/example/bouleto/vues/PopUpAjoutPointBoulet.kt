@@ -152,14 +152,6 @@ fun PopUpAjoutPointBoulet(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Sélection du membre
-                Text(
-                    text = "Sélectionner un membre",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = membreSelectionne?.pseudo ?: "",
@@ -179,6 +171,7 @@ fun PopUpAjoutPointBoulet(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
+                            //.background(color = Color.White)
                             .clickable { expanded = !expanded },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFFFB300),
@@ -189,32 +182,77 @@ fun PopUpAjoutPointBoulet(
                         enabled = false
                     )
 
+                    // ✅ DROPDOWN AVEC SCROLLBAR VISIBLE
                     DropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
-                        modifier = Modifier
-                            .fillMaxWidth(0.72f)
-                            .heightIn(max = 200.dp)
+                        modifier = Modifier.fillMaxWidth(0.72f).background(color = Color.White)
                     ) {
-                        if (membres.isEmpty()) {
-                            DropdownMenuItem(
-                                text = { Text("Aucun membre") },
-                                onClick = {},
-                                enabled = false
-                            )
-                        } else {
-                            membres.forEach { membre ->
-                                DropdownMenuItem(
-                                    text = { Text(membre.pseudo) },
-                                    onClick = {
-                                        membreSelectionne = membre
-                                        expanded = false
+                        // ✅ Box avec scrollbar personnalisée
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(color = Color.White)
+                                .heightIn(max = 200.dp)
+                        ) {
+                            val scrollState = rememberScrollState()
+
+                            // ✅ Contenu scrollable
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .verticalScroll(scrollState)
+                            ) {
+                                if (membres.isEmpty()) {
+                                    DropdownMenuItem(
+                                        text = { Text("Aucun membre", color = Color.Gray) },
+                                        onClick = {},
+                                        enabled = false
+                                    )
+                                } else {
+                                    membres.forEach { membre ->
+                                        DropdownMenuItem(
+                                            text = { Text(membre.pseudo) },
+                                            onClick = {
+                                                membreSelectionne = membre
+                                                expanded = false
+                                            }
+                                        )
                                     }
-                                )
+                                }
+                            }
+
+                            // ✅ SCROLLBAR VISIBLE À DROITE
+                            if (scrollState.maxValue > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .fillMaxHeight()
+                                        .width(6.dp)
+                                        .padding(vertical = 4.dp)
+                                        .background(
+                                            Color.LightGray.copy(alpha = 0.3f),
+                                            RoundedCornerShape(3.dp)
+                                        )
+                                ) {
+                                    // ✅ Thumb de la scrollbar
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .fillMaxHeight(
+                                                fraction = scrollState.value.toFloat() / scrollState.maxValue.toFloat()
+                                            )
+                                            .background(
+                                                Color(0xFFFFB300).copy(alpha = 0.7f),
+                                                RoundedCornerShape(3.dp)
+                                            )
+                                    )
+                                }
                             }
                         }
                     }
                 }
+
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -265,7 +303,7 @@ fun PopUpAjoutPointBoulet(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-// ✅ RECHERCHE D'ADRESSE
+        // ✅ RECHERCHE D'ADRESSE
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "Ou rechercher une adresse",
@@ -333,7 +371,7 @@ fun PopUpAjoutPointBoulet(
                         val dropdownHeightPx =
                             with(LocalDensity.current) { dropdownHeight.toPx() }
                         val extraPadding =
-                            with(LocalDensity.current) { 365.dp.toPx() } // ✅ Espace supplémentaire
+                            with(LocalDensity.current) { 350.dp.toPx() } // ✅ Espace supplémentaire
                         Popup(
                             alignment = Alignment.TopStart,
                             offset = IntOffset(
@@ -354,11 +392,13 @@ fun PopUpAjoutPointBoulet(
                                     modifier = Modifier
                                         .verticalScroll(rememberScrollState())
                                         .padding(vertical = 4.dp)
+                                        .background(color = Color.White)
                                 ) {
                                     resultatsApiState.results.forEach { adresse ->
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
+                                                .background(color = Color.White)
                                                 .clickable {
                                                     adresseRecherche = adresse.fulltext.toString()
                                                     adresseSelectionnee = adresse

@@ -72,6 +72,7 @@ android {
         implementation("androidx.compose.ui:ui-viewbinding:1.6.0")
         implementation("com.google.android.gms:play-services-location:21.1.0")
         implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+        implementation("androidx.compose.material:material-icons-extended:1.6.0")
 
         implementation("com.squareup.moshi:moshi:1.15.0")
         implementation("com.squareup.moshi:moshi-kotlin:1.15.0")

@@ -12,7 +12,12 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.Diamond
+import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.MilitaryTech
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.WineBar
+import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -90,14 +95,16 @@ fun CartePerso(
         ) {
             // Icône de position
             if (position <= 3) {
-                val iconColor = when (position) {
-                    1 -> Color(0xFFFFB300) // Or
-                    2 -> Color(0xFF90CAF9) // Argent/Bleu clair
-                    3 -> Color(0xFFEF9A9A) // Bronze/Rouge clair
-                    else -> Color.Gray
+                // ✅ Sélectionner l'icône et la couleur selon la position
+                val (iconVector, iconColor) = when (position) {
+                    1 -> Icons.Outlined.EmojiEvents to Color(0xFFDAA520)  // Or (Diamond)
+                    2 -> Icons.Outlined.WorkspacePremium to Color(0xFFC0C0C0)  // Argent (WineBar)
+                    3 -> Icons.Outlined.MilitaryTech to Color(0xFFCC6633)     // Bronze (Star)
+                    else -> Icons.Outlined.Star to Color.Gray
                 }
+
                 Icon(
-                    imageVector = Icons.Outlined.Star,
+                    imageVector = iconVector,
                     contentDescription = "Position $position",
                     tint = iconColor,
                     modifier = Modifier.size(28.dp)
@@ -108,7 +115,7 @@ fun CartePerso(
                     fontSize = 16.sp,
                     color = Color(0xFF9E9E9E),
                     fontWeight = FontWeight.Medium,
-                    modifier = Modifier.width(28.dp) // Largeur fixe pour alignement
+                    modifier = Modifier.width(28.dp)
                 )
             }
 

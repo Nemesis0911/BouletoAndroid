@@ -10,10 +10,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -271,7 +273,7 @@ fun Carte(
                 containerColor = Color.White,
                 contentColor = Color(0xFFFFB300)
             ) {
-                Icon(Icons.Default.KeyboardArrowUp, "Zoom avant")
+                Icon(Icons.Default.Add, "Zoom avant")
             }
 
             FloatingActionButton(
@@ -279,7 +281,7 @@ fun Carte(
                 containerColor = Color.White,
                 contentColor = Color(0xFFFFB300)
             ) {
-                Icon(Icons.Default.KeyboardArrowDown, "Zoom arrière")
+                Icon(Icons.Default.Remove, "Zoom arrière")
             }
 
             FloatingActionButton(
