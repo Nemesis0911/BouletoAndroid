@@ -303,7 +303,6 @@ fun PopUpAjoutPointBoulet(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-        // ✅ RECHERCHE D'ADRESSE
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "Ou rechercher une adresse",
@@ -365,18 +364,17 @@ fun PopUpAjoutPointBoulet(
                         )
                     }
 
-                    // ✅ POPUP SÉPARÉ (en dehors du Box du TextField)
+                    // ✅ POPUP AVEC SCROLLBAR
                     if (showSuggestions && resultatsApiState.results.isNotEmpty()) {
-                        val dropdownHeight = minOf(200.dp, (resultatsApi.results.size * 60).dp)
-                        val dropdownHeightPx =
-                            with(LocalDensity.current) { dropdownHeight.toPx() }
-                        val extraPadding =
-                            with(LocalDensity.current) { 350.dp.toPx() } // ✅ Espace supplémentaire
+                        val dropdownHeight = minOf(200.dp, (resultatsApiState.results.size * 60).dp)
+                        val dropdownHeightPx = with(LocalDensity.current) { dropdownHeight.toPx() }
+                        val extraPadding = with(LocalDensity.current) { 350.dp.toPx() }
+
                         Popup(
                             alignment = Alignment.TopStart,
                             offset = IntOffset(
                                 x = textFieldPosition.x.toInt() - 150,
-                                y = textFieldPosition.y.toInt() - dropdownHeightPx.toInt() - extraPadding.toInt()  // ✅ Ajoute un padding
+                                y = textFieldPosition.y.toInt() - dropdownHeightPx.toInt() - extraPadding.toInt()
                             ),
                             onDismissRequest = { showSuggestions = false }
                         ) {
@@ -388,39 +386,78 @@ fun PopUpAjoutPointBoulet(
                                 shadowElevation = 8.dp,
                                 color = MaterialTheme.colorScheme.surface
                             ) {
-                                Column(
+                                // ✅ Box pour contenir la liste + scrollbar
+                                Box(
                                     modifier = Modifier
-                                        .verticalScroll(rememberScrollState())
-                                        .padding(vertical = 4.dp)
+                                        .fillMaxWidth()
+                                        .heightIn(max = 200.dp)
                                         .background(color = Color.White)
                                 ) {
-                                    resultatsApiState.results.forEach { adresse ->
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .background(color = Color.White)
-                                                .clickable {
-                                                    adresseRecherche = adresse.fulltext.toString()
-                                                    adresseSelectionnee = adresse
-                                                    showSuggestions = false
-                                                }
-                                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                                        ) {
-                                            Text(
-                                                text = adresse.fulltext.toString(),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.Medium
-                                            )
-                                            adresse.city?.let {
+                                    val scrollState = rememberScrollState()
+
+                                    // ✅ Colonne scrollable
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .verticalScroll(scrollState)
+                                            .padding(vertical = 4.dp)
+                                            .background(color = Color.White)
+                                    ) {
+                                        resultatsApiState.results.forEach { adresse ->
+                                            Column(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .background(color = Color.White)
+                                                    .clickable {
+                                                        adresseRecherche = adresse.fulltext.toString()
+                                                        adresseSelectionnee = adresse
+                                                        showSuggestions = false
+                                                    }
+                                                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                                            ) {
                                                 Text(
-                                                    text = it,
-                                                    fontSize = 12.sp,
-                                                    color = Color.Gray
+                                                    text = adresse.fulltext.toString(),
+                                                    fontSize = 14.sp,
+                                                    fontWeight = FontWeight.Medium
                                                 )
+                                                adresse.city?.let {
+                                                    Text(
+                                                        text = it,
+                                                        fontSize = 12.sp,
+                                                        color = Color.Gray
+                                                    )
+                                                }
+                                            }
+                                            if (adresse != resultatsApiState.results.last()) {
+                                                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
                                             }
                                         }
-                                        if (adresse != resultatsApiState.results.last()) {
-                                            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                                    }
+
+                                    // ✅ SCROLLBAR PERSONNALISÉE
+                                    if (scrollState.maxValue > 0) {
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.CenterEnd)
+                                                .fillMaxHeight()
+                                                .width(6.dp)
+                                                .padding(vertical = 4.dp)
+                                                .background(
+                                                    Color.LightGray.copy(alpha = 0.3f),
+                                                    RoundedCornerShape(3.dp)
+                                                )
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .fillMaxHeight(
+                                                        fraction = scrollState.value.toFloat() / scrollState.maxValue.toFloat()
+                                                    )
+                                                    .background(
+                                                        Color(0xFFFFB300).copy(alpha = 0.7f),
+                                                        RoundedCornerShape(3.dp)
+                                                    )
+                                            )
                                         }
                                     }
                                 }
@@ -428,6 +465,7 @@ fun PopUpAjoutPointBoulet(
                         }
                     }
                 }
+
 
 
                 Spacer(modifier = Modifier.height(16.dp))
