@@ -55,6 +55,14 @@ Ce projet est développé en **Kotlin** natif pour Android.
 *   **Navigation :** Navigation Compose & Gestion d'états
 *   **Géolocalisation :** Intégration Google Maps / Coordonnées GPS
 
+## 🚀 Fonctionnalités futures
+
+Pour rendre l'expérience encore plus complète, plusieurs évolutions sont envisagées :
+
+*   **Enrichissement des preuves :** Possibilité d'ajouter une **photo** ou une courte vidéo pour immortaliser le "flagrant délit".
+*   **Description détaillée :** Amélioration du champ description pour raconter l'anecdote avec plus de précision.
+*   **Gestion depuis la carte :** Possibilité de consulter les détails et de **supprimer un point boulet** directement en cliquant sur son marqueur sur la carte.
+
 ## 🎨 Maquettes et Design
 
 Le design de l'application a été pensé pour être simple et efficace. Vous pouvez consulter les maquettes interactives ici :
