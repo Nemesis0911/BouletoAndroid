@@ -48,19 +48,6 @@ import org.osmdroid.views.overlay.MapEventsOverlay
 
 
 
-//// 🎨 Style de carte sombre
-//val DARK_MAP_TILE_SOURCE = XYTileSource(
-//    "CartoDarkMatter",
-//    0, 19, 256, ".png",
-//    arrayOf(
-//        "https://a.basemaps.cartocdn.com/dark_all/",
-//        "https://b.basemaps.cartocdn.com/dark_all/",
-//        "https://c.basemaps.cartocdn.com/dark_all/",
-//        "https://d.basemaps.cartocdn.com/dark_all/"
-//    ),
-//    "© OpenStreetMap contributors © CARTO"
-//)
-
 // 🔧 Fonction pour redimensionner les icônes
 fun resizeDrawable(drawable: Drawable, width: Int, height: Int): BitmapDrawable {
     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -95,6 +82,8 @@ fun Carte(
     val context = LocalContext.current
     var mapView by remember { mutableStateOf<MapView?>(null) }
     val iconCache = remember { mutableMapOf<String, BitmapDrawable>() }
+    val groupeActuel by viewModel.groupeSelectionne.collectAsState()
+
 
     // Configuration OSMDroid
     DisposableEffect(Unit) {

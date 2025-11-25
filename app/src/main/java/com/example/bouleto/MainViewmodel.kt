@@ -77,7 +77,19 @@ class MainViewmodel(application: Application): AndroidViewModel(application) {
     fun deleteGroupe(id: Int) {
         viewModelScope.launch {
             bddRepository.deleteGroupe(id)
-            getAll()
+
+            // ✅ Filtre la liste
+            groupes.value = groupes.value.filter { it.id != id }
+
+            // ✅ NOUVEAU : Réinitialise le groupe sélectionné si c'est celui supprimé
+            if (groupeSelectionne.value.id == id) {
+                groupeSelectionne.value = Groupe(
+                    id = -1,
+                    nom = "",
+                    couleur = androidx.compose.ui.graphics.Color.Gray,
+                    membres = emptyList() // ⚠️ Liste vide = rien à afficher
+                )
+            }
         }
     }
 
