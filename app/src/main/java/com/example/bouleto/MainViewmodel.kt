@@ -23,7 +23,6 @@ class MainViewmodel(application: Application): AndroidViewModel(application) {
     val bddRepository = BddRepository(application)
     val apiRepository = ApiRepository()
 
-    // ✅ INITIALISE LocationHelper DIRECTEMENT dans le constructeur
     private val locationHelper: LocationHelper = LocationHelper(application.applicationContext)
 
     // StateFlows pour la géolocalisation
@@ -50,7 +49,6 @@ class MainViewmodel(application: Application): AndroidViewModel(application) {
     // API
     val resultatApi = MutableStateFlow<ApiResponse>(ApiResponse(results = emptyList(), status = ""))
 
-    // ✅ AJOUTE UN BLOC init pour logger l'initialisation
     init {
         Log.d("MainViewModel", "✅ ViewModel initialisé")
         Log.d("MainViewModel", "✅ LocationHelper créé")
@@ -145,8 +143,6 @@ class MainViewmodel(application: Application): AndroidViewModel(application) {
         Log.d("MainViewModel", "🔐 Permission GPS: $granted")
     }
 
-    // ✅ SUPPRIME la fonction initLocationHelper (plus nécessaire)
-    // Tu n'as plus besoin de cette fonction car LocationHelper est créé automatiquement
 
     override fun onCleared() {
         super.onCleared()

@@ -236,6 +236,7 @@ fun Main() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(color = Color.White)
                     .padding(paddingValues)
             ) {
                 Column(
@@ -309,6 +310,7 @@ fun Main() {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+//                        .background(color = Color.White)
                         .weight(1f)
                 ) {
                     NavDisplay(
@@ -331,7 +333,7 @@ fun Main() {
                                 }
 
                                 is DestinationParametres -> NavEntry(key) {
-                                    Parametres(viewModel = viewModel)
+                                    Parametres()
                                 }
 
                                 else -> {
